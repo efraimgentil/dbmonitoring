@@ -1,0 +1,21 @@
+#title-monitoring {
+	margin: 0;
+}
+
+#menu {
+	margin-top: 6px;
+}
+
+#menu button {
+	float: right !important;
+}
+
+#row-query .result-container{
+	height: 100%;
+}
+
+#result {
+	border: 1px black solid;
+	height: 100%;
+	overflow: auto
+}
