@@ -1,6 +1,7 @@
 var interval = null;
 
 var urlMonitor = window.location.pathname + "monitor";
+
 $(document).ready(function() {
 	$(window).resize(resizeTheResultArea);
 	resizeTheResultArea();
@@ -23,11 +24,6 @@ $(document).ready(function() {
 						$("#resultado").empty()
 							.append("<span style='color:green;'>"+ json.msg + "</span>")
 							.append("<br/><span style='color:green;'>Iniciando consulta...</span>");
-						$("#host").attr("disabled","disabled");
-						$("#usuario").attr("disabled","disabled");
-						$("#password").attr("disabled","disabled");
-						$("#refreshTime").attr("disabled","disabled");
-						$("#titulo").attr("disabled","disabled");
 						$("#btnIniciarMonitoramento").addClass("disabled");
 						$("#btnStopMonitoramento").removeClass("disabled");
 						if (titulo != "") {
@@ -147,6 +143,15 @@ function validateNewMonitorForm() {
 	
 	return valid;
 }
+
+/**
+ * Disable all inputs in form-new-monitor
+ */
+function disableFormNewMonitor (){
+	$("#form-new-monitor").find("input, select").each(function( index , elem){
+		$(elem).attr("disabled","disabled");
+	});
+};
 
 function openAddNewMonitorModal() {
 
