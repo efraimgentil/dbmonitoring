@@ -24,8 +24,8 @@ public class MonitorServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final String INICIAR = "iniciar";
-	private static final String ATUALIZAR = "atualizar";
+	private static final String INITIATE = "INITIATE";
+	private static final String UPDATE = "UPDATE";
 
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
@@ -34,14 +34,13 @@ public class MonitorServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		request.setCharacterEncoding("UTF-8");
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		
+		String action = request.getParameter("action") != null ? request.getParameter("action") : null;
 
-		String acao = request.getParameter("acao") != null ? request
-				.getParameter("acao") : null;
-
-		if ("iniciar".equalsIgnoreCase(acao)) {
-			response.setCharacterEncoding("UTF-8");
-			PrintWriter pw = response.getWriter();
-
+		PrintWriter pw = response.getWriter();
+		if ( INITIATE.equalsIgnoreCase(action) ) {
 			Object hostO = request.getParameter("host");
 			Object usuarioO = request.getParameter("usuario");
 			Object passwordO = request.getParameter("password");
@@ -58,12 +57,10 @@ public class MonitorServlet extends HttpServlet {
 				pw.write("{ \"sucesso\" : false , \"msg\" : \"Não foi possivel abrir a conexão, verifique as informações de conexão.\" }");
 				e.printStackTrace();
 			}
+			return;
 		}
 
-		if ("atualizar".equalsIgnoreCase(acao)) {
-			response.setCharacterEncoding("UTF-8");
-			PrintWriter pw = response.getWriter();
-
+		if (UPDATE.equalsIgnoreCase(action)) {
 			Object hostO = request.getParameter("host");
 			String host = hostO != null ? (String) hostO : null;
 			Object consultaO = request.getParameter("consulta");
@@ -85,7 +82,11 @@ public class MonitorServlet extends HttpServlet {
 				}
 			else
 				pw.write("{ \"sucesso\" : true , \"msg\" : \"Não a nenhuma consulta a ser realizada\" }");
+			
+			return;
 		}
+		
+		pw.write("{ \"sucesso\" : true , \"msg\" : \"This is not a valid action\" }");
 	}
 
 	private String convertResultSetToJSON(ResultSet rs) throws SQLException {

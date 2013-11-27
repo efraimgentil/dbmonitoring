@@ -45,7 +45,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal"><fmt:message key="button.cancel" /></button>
-				<button type="button" class="btn btn-primary"><fmt:message key="button.initiate" /></button>
+				<button type="button" id="btnInitiateMonitor" class="btn btn-primary"><fmt:message key="button.initiate" /></button>
 			</div>
 		</div>
 		<!-- /.modal-content -->

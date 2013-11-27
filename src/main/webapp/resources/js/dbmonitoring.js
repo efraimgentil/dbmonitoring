@@ -1,25 +1,20 @@
 var interval = null;
 
-var urlMonitor = window.location.pathname + "monitor";
-
 $(document).ready(function() {
 	$(window).resize(resizeTheResultArea);
 	resizeTheResultArea();
 
-	$("#btnIniciarMonitoramento").click(function() {
-		if (!$(this).hasClass("disabled")) {
+	$("#btnInitiateMonitor").click(function() {
+		var btn = this;
+		if (validateNewMonitorForm() && !btn.classList.contains( "disabled" ) ) {
+			btn.classList.add( "disabled" );
 			$.ajax({
-				url : window.location.pathname
-					+ "monitor",
+				url  : $("#form-new-monitor").attr("action") ,
 				type : "POST",
-				data : {
-					acao : "iniciar",
-					host : host,
-					usuario : usuario,
-					password : password,
-				},
+				data : $("#form-new-monitor").serialize() ,
 				success : function(	data, status, jqXHR) {
-					var json = $.parseJSON(data);
+					btn.classList.remove( "disabled" );
+					var json =  data; // $.parseJSON(data);
 					if (json.sucesso) {
 						$("#resultado").empty()
 							.append("<span style='color:green;'>"+ json.msg + "</span>")
@@ -32,17 +27,11 @@ $(document).ready(function() {
 						atualizar();
 						interval = window.setInterval(atualizar, refreshTime * 1000);
 					} else {
-						$("#resultado").empty()
-							.append("<span style='color:red;'>"+ json.msg + "</span>");
+						$("#form-new-monitor-errors")
+						   .html( json.msg  ).removeClass("hidden");
 					}
 				},
-				error : function(jqXHR, status, errorThrown) {
-					if (console) {
-						console.log("Error: " + status);
-						console.log(jqXHR);
-						console.log(errorThrown);
-					}
-				}
+				error : manageException
 			});
 		}
 	});
@@ -52,11 +41,6 @@ $(document).ready(function() {
 			if (interval != null) {
 				clearInterval(interval);
 				interval = null;
-				$("#host").removeAttr("disabled");
-				$("#usuario").removeAttr("disabled");
-				$("#password").removeAttr("disabled");
-				$("#refreshTime").removeAttr("disabled");
-				$("#titulo").removeAttr("disabled", "disabled");
 				$("#btnIniciarMonitoramento").removeClass("disabled");
 				$("#btnStopMonitoramento").addClass("disabled");
 			}
@@ -66,82 +50,73 @@ $(document).ready(function() {
 
 function atualizar() {
 	console.log("Atualizar");
-	var consulta = $("#consulta").val();
+	var query = $("#consulta").val();
 	var host = $("#host").val();
-	$
-			.ajax({
-				url : urlMonitor,
-				type : "POST",
-				data : {
-					acao : "update",
-					consulta : query,
-					host : host
-				},
-				success : function(data, status, jqXHR) {
-					console.log("Sucesso", data);
-					$("#resultado").empty();
-					if (data != "") {
-						var json = $.parseJSON(data);
-						if (json.sucesso) {
-							$("#dataAtualizacao").text(json.dataAtualizacao);
-							if (json.result.rows && json.result.rows.length > 0) {
-								var j = json.result.rows[0];
-								var arr = []
-								arr
-										.push('<table class="table table-striped"><tr>');
-								for (k in j) {
-									arr.push("<th>");
-									arr.push("" + k);
-									arr.push("</th>");
-								}
-								arr.push("</tr>");
-								for (var i = 0; i < json.result.rows.length; i++) {
-									var row = json.result.rows[i];
-									arr.push("<tr>");
-									for (k in row) {
-										arr.push("<td>");
-										arr.push(row[k]);
-										arr.push("</td>");
-									}
-									arr.push("</tr>");
-								}
-								arr.push('</table>');
-								$("#resultado").append(arr.join(""));
-							}
-						} else {
-							$("#resultado").append(
-									"<span style='color:red;'>" + json.msg
-											+ "</span>");
+	$.ajax({
+		url : urlMonitor,
+		type : "POST",
+		data : {
+			acao : "update",
+			consulta : query,
+			host : host
+		},
+		success : function(data, status, jqXHR) {
+			console.log("Sucesso", data);
+			$("#resultado").empty();
+			if (data != "") {
+				var json = $.parseJSON(data);
+				if (json.sucesso) {
+					$("#dataAtualizacao").text(json.dataAtualizacao);
+					if (json.result.rows && json.result.rows.length > 0) {
+						var j = json.result.rows[0];
+						var arr = []
+						arr.push('<table class="table table-striped"><tr>');
+						for (k in j) {
+							arr.push("<th>");
+							arr.push("" + k);
+							arr.push("</th>");
 						}
+						arr.push("</tr>");
+						for (var i = 0; i < json.result.rows.length; i++) {
+							var row = json.result.rows[i];
+							arr.push("<tr>");
+							for (k in row) {
+								arr.push("<td>");
+								arr.push(row[k]);
+								arr.push("</td>");
+							}
+							arr.push("</tr>");
+						}
+						arr.push('</table>');
+						$("#resultado").append(arr.join(""));
 					}
-
-				},
-				error : function(jqXHR, status, errorThrown) {
-					if (console) {
-						console.log("Error: " + status);
-						console.log(jqXHR);
-						console.log(errorThrown);
-					}
-					$('#btnStopMonitoramento').trigger('click');
+				} else {
+					$("#resultado").append("<span style='color:red;'>" + json.msg + "</span>");
 				}
-			});
+			}
+		},
+		error : manageException
+	});
 }
 
 function validateNewMonitorForm() {
-	var valid = ture;
-	var host = $("#host").val();
-	var usuario = $("#usuario").val();
+	var divErrors = $("#form-new-monitor-errors").empty();
+	var errors = [];
+	var host = $("#host").val().replace(/\s/g , "");
+	if(host.length == 0)
+		errors.push("<b>Host</b> can't be empty");
+	var user = $("#user").val();
+	if(user.length == 0)
+		errors.push("<b>User</b> can't be empty");
 	var password = $("#password").val();
-	var refreshTime = $("#refreshTime")
-			.val();
-	var titulo = $("#titulo").val();
-	refreshTime = refreshTime.replace(
-			/\D/g, "");
-	if (refreshTime == "") {
-		refreshTime = 10;
-	}
+	if(password.length == 0)
+		errors.push("<b>Password</b> can't be empty");
 	
-	return valid;
+	if(errors.length > 0){
+		$(divErrors).html( errors.join("<br/>") ).removeClass("hidden");
+		return false;
+	}
+	return true;
 }
 
 /**
@@ -152,6 +127,19 @@ function disableFormNewMonitor (){
 		$(elem).attr("disabled","disabled");
 	});
 };
+
+function enableFormNewMonitor(){
+	$("#form-new-monitor").find("input, select").each(function( index , elem){
+		$(elem).removeAttr("disabled");
+	});
+}
+
+function manageException (jqXHR, status, errorThrown) {
+	if (console) {
+		console.log("Well that was unexpected" , errorThrown); 
+		console.log("Error: " + console.log(jqXHR));
+	}
+}
 
 function openAddNewMonitorModal() {
 

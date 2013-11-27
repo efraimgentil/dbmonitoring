@@ -4,7 +4,12 @@
 <fmt:setLocale value='en' />
 <fmt:setBundle basename='messages' />
 
-<form id="form-new-monitor" class="form-horizontal" role="form">
+<div id="form-new-monitor-errors"  class="alert alert-danger hidden">
+	
+</div>
+
+<form id="form-new-monitor" action="${pageContext.request.contextPath}/monitor"  class="form-horizontal" role="form">
+	<input type="hidden" id="action" name="action" value="initiate" >
 	<div class="form-group">
 		<label for="database" class="col-sm-2 control-label"> <fmt:message
 				key="label.database" />
