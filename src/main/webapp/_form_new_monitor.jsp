@@ -54,7 +54,7 @@
 		</label>
 		<div class="col-sm-6">
 			<input type="text" class="form-control input-sm" id="monitor-title"
-			  name="monitor-title"
+			  name="monitorTitle"
 				placeholder='<fmt:message key="label.monitorTitle" />'>
 		</div>
 		<label for="refresh-time" class="col-sm-1 control-label"> <fmt:message
@@ -62,7 +62,7 @@
 		</label>
 		<div class="col-sm-3">
 			<input type="text" class="form-control input-sm" id="refresh-time"
-			    name="refresh-time"
+			    name="refreshTime"
 				placeholder='<fmt:message key="label.refreshTime" />'>
 		</div>
 	</div>
