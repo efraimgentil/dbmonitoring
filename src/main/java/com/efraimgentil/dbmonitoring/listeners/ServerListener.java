@@ -6,7 +6,7 @@ import javax.servlet.ServletContextListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
+import com.efraimgentil.dbmonitoring.connections.ConnectionPoolImpl;
 
 /**
  * 
@@ -23,7 +23,7 @@ public class ServerListener implements ServletContextListener {
 	 */
 	public void contextDestroyed(ServletContextEvent arg0) {
 		logger.info("Limpando pool de conexões");
-		ConnectionPool.disconnect();
+		ConnectionPoolImpl.disconnect();
 	}
 	
 	public void contextInitialized(ServletContextEvent arg0) {

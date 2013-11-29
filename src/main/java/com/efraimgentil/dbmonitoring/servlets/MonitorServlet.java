@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -17,7 +19,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
+import com.efraimgentil.dbmonitoring.connections.ConnectionPoolImpl;
+import com.mysql.jdbc.StringUtils;
 
 @WebServlet({ "/monitor" })
 public class MonitorServlet extends HttpServlet {
@@ -41,6 +44,7 @@ public class MonitorServlet extends HttpServlet {
 
 		PrintWriter pw = response.getWriter();
 		if ( INITIATE.equalsIgnoreCase(action) ) {
+			request.getParameterMap();
 			Object hostO = request.getParameter("host");
 			Object usuarioO = request.getParameter("usuario");
 			Object passwordO = request.getParameter("password");
@@ -48,7 +52,7 @@ public class MonitorServlet extends HttpServlet {
 			String usuario = usuarioO != null ? (String) usuarioO : null;
 			String password = passwordO != null ? (String) passwordO : null;
 			try {
-				ConnectionPool.openConnection(host, usuario, password);
+				ConnectionPoolImpl.openConnection(host, usuario, password);
 				pw.write("{ \"sucesso\" : true , \"msg\" : \"Conexão aberta com sucesso\" }");
 			} catch (ClassNotFoundException e) {
 				pw.write("{ \"sucesso\" : false , \"msg\" : \"Drive de conexão não encontrado.\" }");
@@ -67,7 +71,7 @@ public class MonitorServlet extends HttpServlet {
 			String consulta = consultaO != null ? (String) consultaO : null;
 			if ((consulta != null) && (host != null))
 				try {
-					Connection conn = ConnectionPool.getConnection(host);
+					Connection conn = ConnectionPoolImpl.getConnection(host);
 					Statement stmt = conn.createStatement();
 					ResultSet rs = stmt.executeQuery(consulta);
 					SimpleDateFormat sdf = new SimpleDateFormat(
@@ -92,8 +96,8 @@ public class MonitorServlet extends HttpServlet {
 	private String convertResultSetToJSON(ResultSet rs) throws SQLException {
 		int colCount = rs.getMetaData().getColumnCount();
 		StringBuilder sb = new StringBuilder("{ \"rows\" : [");
-		int total = rs.getRow();
-		List arrayList = new ArrayList();
+//		int total = rs.getRow();
+		List<String> arrayList = new ArrayList<String>();
 		StringBuilder sb2 = null;
 		while (rs.next()) {
 			sb2 = new StringBuilder("{ ");
