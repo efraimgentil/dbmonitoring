@@ -1,5 +1,6 @@
 package com.efraimgentil.dbmonitoring.constants;
 
+
 /**
  * 
  * @author Efraim Gentil
@@ -7,9 +8,9 @@ package com.efraimgentil.dbmonitoring.constants;
  */
 public enum AvailableDatabase {
 	
-	POSTGRES(1 , "Postgres" , "" , false),
-	MYSQL(2 , "Postgres" , "" , false),
-	H2(3 , "Postgres" , "" , true);
+	POSTGRES(1 , "Postgres" , "jdbc:postgresql://" ),
+	MYSQL(2 , "MySQL" , "" ),
+	H2(3 , "H3" , "jdbc:h2:" );
 	
 	private Integer id;
 	
@@ -17,16 +18,21 @@ public enum AvailableDatabase {
     
 	private String connectionUrl;
 	
-    private Boolean testOnly;
-
 	private AvailableDatabase(Integer id, String description,
-			String connectionUrl, Boolean testOnly) {
+			String connectionUrl) {
 		this.id = id;
 		this.description = description;
 		this.connectionUrl = connectionUrl;
-		this.testOnly = testOnly;
 	}
-
+	
+	public AvailableDatabase getAvailableDatabase(Integer id){
+		for( AvailableDatabase availableDatabase : AvailableDatabase.values() ){
+			if ( id.equals( availableDatabase.id ) ) 
+			   return availableDatabase;
+		}
+		return null;
+	}
+	
 	public Integer getId() {
 		return id;
 	}
@@ -39,8 +45,5 @@ public enum AvailableDatabase {
 		return connectionUrl;
 	}
 
-	public Boolean getTestOnly() {
-		return testOnly;
-	}
     
 }

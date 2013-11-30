@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.efraimgentil.dbmonitoring.connections.ConnectionPoolImpl;
+import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
 import com.mysql.jdbc.StringUtils;
 
 @WebServlet({ "/monitor" })
@@ -52,7 +52,7 @@ public class MonitorServlet extends HttpServlet {
 			String usuario = usuarioO != null ? (String) usuarioO : null;
 			String password = passwordO != null ? (String) passwordO : null;
 			try {
-				ConnectionPoolImpl.openConnection(host, usuario, password);
+				ConnectionPool.getInstance().openConnection(host, usuario, password);
 				pw.write("{ \"sucesso\" : true , \"msg\" : \"Conexão aberta com sucesso\" }");
 			} catch (ClassNotFoundException e) {
 				pw.write("{ \"sucesso\" : false , \"msg\" : \"Drive de conexão não encontrado.\" }");
@@ -71,7 +71,7 @@ public class MonitorServlet extends HttpServlet {
 			String consulta = consultaO != null ? (String) consultaO : null;
 			if ((consulta != null) && (host != null))
 				try {
-					Connection conn = ConnectionPoolImpl.getConnection(host);
+					Connection conn = ConnectionPool.getInstance().getConnection(host);
 					Statement stmt = conn.createStatement();
 					ResultSet rs = stmt.executeQuery(consulta);
 					SimpleDateFormat sdf = new SimpleDateFormat(

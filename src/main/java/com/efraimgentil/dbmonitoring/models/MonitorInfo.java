@@ -1,5 +1,7 @@
 package com.efraimgentil.dbmonitoring.models;
 
+import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
+
 /**
  * 
  * @author Efraim Gentil
@@ -7,7 +9,7 @@ package com.efraimgentil.dbmonitoring.models;
  */
 public class MonitorInfo {
 	
-	private String database;
+	private AvailableDatabase database;
 	
 	private String host;
 
@@ -21,11 +23,11 @@ public class MonitorInfo {
 	
 	public MonitorInfo() {	}
 
-	public String getDatabase() {
+	public AvailableDatabase getDatabase() {
 		return database;
 	}
 
-	public void setDatabase(String database) {
+	public void setDatabase(AvailableDatabase database) {
 		this.database = database;
 	}
 

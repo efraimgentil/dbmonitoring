@@ -1,28 +1,45 @@
 package com.efraim.dbmonitoring.connections;
 
+import java.sql.SQLException;
+
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import com.efraimgentil.dbmonitoring.connections.ConnectionPoolImpl;
+import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
+import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 
 
 public class ConnectionPoolIT {
 	
-	private ConnectionPoolImpl connectionPool;
+	private ConnectionPool connectionPool;
 	
-	@BeforeTest
+	private MonitorInfo monitorInfo;
+	
+	@BeforeMethod
 	public void initEachTests(){
-		connectionPool = new ConnectionPoolImpl();
-		MonitorInfo monitorInfo;
-//		monitorInfo.
-		
-//		Connection conn = DriverManager.getConnection("jdbc:h2:~/test", "sa", "");
+		connectionPool = ConnectionPool.getInstance();
+		connectionPool.disconnect();
+		monitorInfo = new MonitorInfo();
+		monitorInfo.setDatabase( AvailableDatabase.H2 );
+		monitorInfo.setRefreshTime(5);
+		monitorInfo.setHost("data/test_database");
+		monitorInfo.setUser("sa");
+		monitorInfo.setPassword("sa");
 	}
 	
-	@Test
-	public void openConnection(){
-		
+	@Test(description = "Should successfully open a H2 connection" , groups = { "success" }  )
+	public void openConnection() throws ClassNotFoundException, SQLException{
+		connectionPool.openConnection(monitorInfo);
+	}
+	
+	@Test(description = "Should try and fail to open a POSTGRES connection"
+			, groups = { "failure" }
+			, expectedExceptions = { SQLException.class })
+	public void tryAndFailOpenConnection() throws ClassNotFoundException, SQLException {
+		monitorInfo.setDatabase( AvailableDatabase.POSTGRES );
+		connectionPool.openConnection(monitorInfo);
 	}
 	
 }
