@@ -4,7 +4,7 @@ $(document).ready(function() {
 	$(window).resize(resizeTheResultArea);
 	resizeTheResultArea();
 
-	$("#btnInitiateMonitor").click(function() {
+	$("#btnOpenConnection").click(function() {
 		var btn = this;
 		if (validateNewMonitorForm() && !btn.classList.contains( "disabled" ) ) {
 			btn.classList.add( "disabled" );
@@ -12,26 +12,11 @@ $(document).ready(function() {
 				url  : $("#form-new-monitor").attr("action") ,
 				type : "POST",
 				data : $("#form-new-monitor").serialize() ,
-				success : function(	data, status, jqXHR) {
+				success : successfullyOpenConnection,
+				error : manageException,
+				complete : function() {
 					btn.classList.remove( "disabled" );
-					var json =  data; // $.parseJSON(data);
-					if (json.sucesso) {
-						$("#resultado").empty()
-							.append("<span style='color:green;'>"+ json.msg + "</span>")
-							.append("<br/><span style='color:green;'>Iniciando consulta...</span>");
-						$("#btnIniciarMonitoramento").addClass("disabled");
-						$("#btnStopMonitoramento").removeClass("disabled");
-						if (titulo != "") {
-							$("#tituloMonitoramento").text(titulo);
-						}
-						atualizar();
-						interval = window.setInterval(atualizar, refreshTime * 1000);
-					} else {
-						$("#form-new-monitor-errors")
-						   .html( json.msg  ).removeClass("hidden");
-					}
-				},
-				error : manageException
+				}
 			});
 		}
 	});
@@ -48,8 +33,8 @@ $(document).ready(function() {
 	});
 });
 
-function atualizar() {
-	console.log("Atualizar");
+function update() {
+	console.log("Update monitor");
 	var query = $("#consulta").val();
 	var host = $("#host").val();
 	$.ajax({
@@ -100,7 +85,7 @@ function atualizar() {
 }
 
 function validateNewMonitorForm() {
-	var divErrors = $("#form-new-monitor-errors").empty();
+	var divErrors = $("#form-new-monitor-messages").addClass("hidden").empty()[0];
 	var errors = [];
 	var host = $("#host").val().replace(/\s/g , "");
 	if(host.length == 0)
@@ -111,9 +96,9 @@ function validateNewMonitorForm() {
 	var password = $("#password").val();
 	if(password.length == 0)
 		errors.push("<b>Password</b> can't be empty");
-	
 	if(errors.length > 0){
-		$(divErrors).html( errors.join("<br/>") ).removeClass("hidden");
+		console.log( divErrors );
+		addErrorMessage( divErrors, errors.join("<br/>") );
 		return false;
 	}
 	return true;
@@ -141,8 +126,42 @@ function manageException (jqXHR, status, errorThrown) {
 	}
 }
 
-function openAddNewMonitorModal() {
+function successfullyOpenConnection( data , status, jqXHR) {
+	var json =  data;
+	if (json.success) {
+		console.log("HAM ?");
+		$('#modalMonitor').modal('hide');	
+		$('#modalQuery').modal('show');
+		addSuccessMessage( $("#form-monitor-query-messages")[0] , json.msg );
+		// update();
+		// interval = window.setInterval( update , refreshTime * 1000);
+	} else {
+		addErrorMessage( $("#form-new-monitor-messages")[0] , json.msg );
+	}
+}
 
+function addSuccessMessage( messageContainer , message ){
+	clearAlertClass(messageContainer);
+	var classList = messageContainer.classList;
+	messageContainer.innerHTML = message;
+	classList.add("alert-success");
+	classList.remove("hidden");
+}
+
+function addErrorMessage( messageContainer , message ){
+	clearAlertClass(messageContainer);
+	var classList = messageContainer.classList;
+	messageContainer.innerHTML = message;
+	classList.add("alert-danger");
+	classList.remove("hidden");
+}
+
+function clearAlertClass( container ){
+	var classList = container.classList;
+	classList.remove("alert-danger");
+	classList.remove("alert-info");
+	classList.remove("alert-warning");
+	classList.remove("alert-success");
 }
 
 function resizeTheResultArea() {

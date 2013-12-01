@@ -5,10 +5,6 @@
 <fmt:setLocale value='en' />
 <fmt:setBundle basename='messages' />
 
-<div id="form-new-monitor-errors"  class="alert alert-danger hidden">
-	
-</div>
-
 <form id="form-new-monitor" action="${pageContext.request.contextPath}/monitor"  class="form-horizontal" role="form">
 	<input type="hidden" id="action" name="action" value="initiate" >
 	<div class="form-group">
@@ -49,24 +45,6 @@
 			<input type="password" class="form-control input-sm" id="password"
 			    name="password"
 				placeholder='<fmt:message key="label.password" />'>
-		</div>
-	</div>
-	<div class="row" style="margin-top:15px">
-		<label for="monitor-title" class="col-sm-2 control-label"> <fmt:message
-				key="label.title" />
-		</label>
-		<div class="col-sm-6">
-			<input type="text" class="form-control input-sm" id="monitor-title"
-			  name="monitorTitle"
-				placeholder='<fmt:message key="label.monitorTitle" />'>
-		</div>
-		<label for="refresh-time" class="col-sm-1 control-label"> <fmt:message
-				key="label.time" />
-		</label>
-		<div class="col-sm-3">
-			<input type="text" class="form-control input-sm" id="refresh-time"
-			    name="refreshTime"
-				placeholder='<fmt:message key="label.refreshTime" />'>
 		</div>
 	</div>
 </form>

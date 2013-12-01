@@ -42,10 +42,10 @@ public class ConnectionPool {
 			String user = monitorInfo.getUser();
 			String password = monitorInfo.getPassword();
 			AvailableDatabase availableDatabase = monitorInfo.getDatabase();
-//			String driver = "org.postgresql.Driver";
+			
+			Class.forName( availableDatabase.getDriver() );
 			String url = availableDatabase.getConnectionUrl() + host;
-			//Class.forName(driver);
-			connections.put(host,  DriverManager.getConnection(url, user, password) );
+			connections.put( host , DriverManager.getConnection( url, user, password ) );
 		}
 	}
 	

@@ -59,12 +59,12 @@ public class MonitorServlet extends HttpServlet {
 			monitorInfo.setPassword(password);
 			try {
 				ConnectionPool.getInstance().openConnection( monitorInfo );
-				pw.write("{ \"sucesso\" : true , \"msg\" : \"Conexão aberta com sucesso\" }");
+				pw.write("{ \"success\" : true , \"msg\" : \"Conexão aberta com sucesso\" }");
 			} catch (ClassNotFoundException e) {
-				pw.write("{ \"sucesso\" : false , \"msg\" : \"Drive de conexão não encontrado.\" }");
+				pw.write("{ \"success\" : false , \"msg\" : \"Drive de conexão não encontrado.\" }");
 				e.printStackTrace();
 			} catch (SQLException e) {
-				pw.write("{ \"sucesso\" : false , \"msg\" : \"Não foi possivel abrir a conexão, verifique as informações de conexão.\" }");
+				pw.write("{ \"success\" : false , \"msg\" : \"Não foi possivel abrir a conexão, verifique as informações de conexão.\" }");
 				e.printStackTrace();
 			}
 			return;
