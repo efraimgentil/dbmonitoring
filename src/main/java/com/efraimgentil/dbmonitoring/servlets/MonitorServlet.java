@@ -19,7 +19,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.efraimgentil.dbmonitoring.connections.ConnectionPoolImpl;
+import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
+import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
+import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 import com.mysql.jdbc.StringUtils;
 
 @WebServlet({ "/monitor" })
@@ -45,14 +47,21 @@ public class MonitorServlet extends HttpServlet {
 		PrintWriter pw = response.getWriter();
 		if ( INITIATE.equalsIgnoreCase(action) ) {
 			request.getParameterMap();
+			Object databaseO = request.getParameter("database");
 			Object hostO = request.getParameter("host");
-			Object usuarioO = request.getParameter("usuario");
+			Object userO = request.getParameter("user");
 			Object passwordO = request.getParameter("password");
+			AvailableDatabase availableDatabase = databaseO != null ? AvailableDatabase.getAvailableDatabase( Integer.valueOf( (String) databaseO ) ) : null;
 			String host = hostO != null ? (String) hostO : null;
-			String usuario = usuarioO != null ? (String) usuarioO : null;
+			String user = userO != null ? (String) userO : null;
 			String password = passwordO != null ? (String) passwordO : null;
+			MonitorInfo monitorInfo = new MonitorInfo();
+			monitorInfo.setDatabase(availableDatabase);
+			monitorInfo.setHost(host);
+			monitorInfo.setUser(user);
+			monitorInfo.setPassword(password);
 			try {
-				ConnectionPoolImpl.openConnection(host, usuario, password);
+				ConnectionPool.getInstance().openConnection( monitorInfo );
 				pw.write("{ \"sucesso\" : true , \"msg\" : \"Conexão aberta com sucesso\" }");
 			} catch (ClassNotFoundException e) {
 				pw.write("{ \"sucesso\" : false , \"msg\" : \"Drive de conexão não encontrado.\" }");
@@ -71,7 +80,7 @@ public class MonitorServlet extends HttpServlet {
 			String consulta = consultaO != null ? (String) consultaO : null;
 			if ((consulta != null) && (host != null))
 				try {
-					Connection conn = ConnectionPoolImpl.getConnection(host);
+					Connection conn = ConnectionPool.getInstance().getConnection(host);
 					Statement stmt = conn.createStatement();
 					ResultSet rs = stmt.executeQuery(consulta);
 					SimpleDateFormat sdf = new SimpleDateFormat(

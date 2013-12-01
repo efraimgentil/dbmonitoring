@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <fmt:setLocale value='en' />
 <fmt:setBundle basename='messages' />
 
@@ -16,7 +17,9 @@
 		</label>
 		<div class="col-sm-10">
 			<select id="database" name="database" class="form-control input-sm">
-				<option>1</option>
+				<c:forEach var="item" items="${availableDatabases}" >
+				 	<option value="${item.id}" ><c:out value="${item.description}" /></option>
+				</c:forEach>
 			</select>
 		</div>
 	</div>
