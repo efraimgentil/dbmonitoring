@@ -48,7 +48,7 @@ public class ConnectionPool {
 			connections.put(host,  DriverManager.getConnection(url, user, password) );
 		}
 	}
-
+	
 	public void disconnect() {
 		for (String key : connections.keySet()) {
 			try {
@@ -60,6 +60,5 @@ public class ConnectionPool {
 		}
 		connections.clear();
 	}
-	
 
 }

@@ -8,8 +8,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -22,7 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
-import com.mysql.jdbc.StringUtils;
 
 @WebServlet({ "/monitor" })
 public class MonitorServlet extends HttpServlet {
