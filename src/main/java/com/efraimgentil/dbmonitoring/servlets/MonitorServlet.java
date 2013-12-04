@@ -59,7 +59,7 @@ public class MonitorServlet extends HttpServlet {
 			monitorInfo.setPassword(password);
 			try {
 				ConnectionPool.getInstance().openConnection( monitorInfo );
-				pw.write("{ \"success\" : true , \"msg\" : \"Conexão aberta com sucesso\" }");
+				pw.write("{ \"success\" : true , \"msg\" : \"Conexão aberta com sucesso\" , \"data\" : { \"token\" : \"" + host +"\"  } } ");
 			} catch (ClassNotFoundException e) {
 				pw.write("{ \"success\" : false , \"msg\" : \"Drive de conexão não encontrado.\" }");
 				e.printStackTrace();
@@ -71,32 +71,34 @@ public class MonitorServlet extends HttpServlet {
 		}
 
 		if (UPDATE.equalsIgnoreCase(action)) {
-			Object hostO = request.getParameter("host");
-			String host = hostO != null ? (String) hostO : null;
-			Object consultaO = request.getParameter("consulta");
-			String consulta = consultaO != null ? (String) consultaO : null;
-			if ((consulta != null) && (host != null))
+			Object monitorTitleO = request.getParameter("monitorTitle");
+			Object tokenO = request.getParameter("token");
+			Object queryO = request.getParameter("query");
+			String token = tokenO != null ? (String) tokenO : null;
+			String monitorTitle = monitorTitleO != null ? (String) monitorTitleO : null;
+			String query = queryO != null ? (String) queryO : null;
+			if ( query != null && ( token != null && !token.isEmpty() ) )
 				try {
-					Connection conn = ConnectionPool.getInstance().getConnection(host);
+					Connection conn = ConnectionPool.getInstance().getConnection( token );
 					Statement stmt = conn.createStatement();
-					ResultSet rs = stmt.executeQuery(consulta);
+					ResultSet rs = stmt.executeQuery(query);
 					SimpleDateFormat sdf = new SimpleDateFormat(
 							"dd/MM/yyyy as HH:mm:ss");
-					pw.write("{ \"sucesso\" : true , \"msg\" : \"Consulta realizada com sucesso\" , \"result\" : "
+					pw.write("{ \"success\" : true , \"msg\" : \"Consulta realizada com sucesso\" , \"data\" : "
 							+ convertResultSetToJSON(rs)
 							+ " , \"dataAtualizacao\" : \""
 							+ sdf.format(new Date()) + "\" }");
 				} catch (SQLException e) {
-					pw.write("{ \"sucesso\" : false , \"msg\" : \"Não foi possivel realizar a consulta, verifiquer os dados da consulta.\" }");
+					pw.write("{ \"success\" : false , \"msg\" : \"Não foi possivel realizar a consulta, verifiquer os dados da consulta.\" }");
 					e.printStackTrace();
 				}
 			else
-				pw.write("{ \"sucesso\" : true , \"msg\" : \"Não a nenhuma consulta a ser realizada\" }");
+				pw.write("{ \"success\" : true , \"msg\" : \"Não a nenhuma consulta a ser realizada\" }");
 			
 			return;
 		}
 		
-		pw.write("{ \"sucesso\" : true , \"msg\" : \"This is not a valid action\" }");
+		pw.write("{ \"success\" : true , \"msg\" : \"This is not a valid action\" }");
 	}
 
 	private String convertResultSetToJSON(ResultSet rs) throws SQLException {

@@ -10,40 +10,41 @@ import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 
+import static org.testng.AssertJUnit.*;
 
 public class ConnectionPoolIT {
-	
+
 	private ConnectionPool connectionPool;
-	
+
 	private MonitorInfo monitorInfo;
-	
+
 	@BeforeMethod
-	public void initEachTest(){
+	public void initEachTest() {
 		connectionPool = ConnectionPool.getInstance();
 		monitorInfo = new MonitorInfo();
-		monitorInfo.setDatabase( AvailableDatabase.H2 );
+		monitorInfo.setDatabase(AvailableDatabase.H2);
 		monitorInfo.setRefreshTime(5);
 		monitorInfo.setHost("data/test_database");
 		monitorInfo.setUser("sa");
 		monitorInfo.setPassword("sa");
+		
 	}
-	
+
 	@AfterMethod
-	public void afterEachTest(){
+	public void afterEachTest() {
 		connectionPool.disconnect();
 	}
 
-	@Test(description = "Should successfully open a H2 connection" , groups = { "success" }  )
-	public void openConnection() throws ClassNotFoundException, SQLException{
+	@Test(description = "Should successfully open a H2 connection", groups = { "success" })
+	public void openConnection() throws ClassNotFoundException, SQLException {
 		connectionPool.openConnection(monitorInfo);
 	}
-	
-	@Test(description = "Should try and fail to open a POSTGRES connection"
-			, groups = { "failure" }
-			, expectedExceptions = { SQLException.class })
-	public void tryAndFailOpenConnection() throws ClassNotFoundException, SQLException {
-		monitorInfo.setDatabase( AvailableDatabase.POSTGRES );
+
+	@Test(description = "Should try and fail to open a POSTGRES connection", groups = { "failure" }, expectedExceptions = { SQLException.class })
+	public void tryAndFailOpenConnection() throws ClassNotFoundException,
+			SQLException {
+		monitorInfo.setDatabase(AvailableDatabase.POSTGRES);
 		connectionPool.openConnection(monitorInfo);
 	}
-	
+
 }
