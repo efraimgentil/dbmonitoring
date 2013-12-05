@@ -1,24 +1,40 @@
 package com.efraimgentil.dbmonitoring.models;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
+import com.efraimgentil.dbmonitoring.jackson.AvailableDatabaseDeserializer;
+import com.efraimgentil.dbmonitoring.jackson.AvailableDatabaseSerializer;
 
 /**
  * 
  * @author Efraim Gentil
  * @date Nov 28, 2013
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MonitorInfo {
 	
+	@JsonProperty("database")
+	@JsonSerialize( using = AvailableDatabaseSerializer.class  )
+	@JsonDeserialize( using= AvailableDatabaseDeserializer.class )
 	private AvailableDatabase database;
 	
+	@JsonProperty("host")
 	private String host;
 
+	@JsonProperty("user")
 	private String user;
 	
+	@JsonProperty("password")
 	private String password;
 	
+	@JsonProperty("monitorTitle")
 	private String monitorTitle;
 	
+	@JsonProperty("refreshTime")
 	private Integer refreshTime;
 	
 	public MonitorInfo() {	}

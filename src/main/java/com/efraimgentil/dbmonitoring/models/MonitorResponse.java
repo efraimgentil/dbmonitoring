@@ -1,5 +1,7 @@
 package com.efraimgentil.dbmonitoring.models;
 
+import java.util.Map;
+
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -16,7 +18,7 @@ public class MonitorResponse {
 	private String message;
 	
 	@JsonProperty("data")
-	private String data;
+	private Map<String, Object> data;
 	
 	public MonitorResponse() {	}
 	
@@ -26,7 +28,7 @@ public class MonitorResponse {
 		this.message = message;
 	}
 	
-	public MonitorResponse(Boolean success, String message, String data) {
+	public MonitorResponse(Boolean success, String message, Map<String, Object> data) {
 		super();
 		this.success = success;
 		this.message = message;
@@ -49,11 +51,11 @@ public class MonitorResponse {
 		this.message = message;
 	}
 
-	public String getData() {
+	public Map<String, Object> getData() {
 		return data;
 	}
 
-	public void setData(String data) {
+	public void setData(Map<String, Object> data) {
 		this.data = data;
 	}
 	

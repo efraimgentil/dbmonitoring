@@ -10,7 +10,9 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -22,6 +24,8 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.impl.JsonWriteContext;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectReader;
+import org.codehaus.jackson.map.ObjectWriter;
 
 import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
@@ -46,45 +50,27 @@ public class MonitorServlet extends HttpServlet {
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 		
+		Map<String, Object> data = new HashMap<>();
+		
 		String action = request.getParameter("action") != null ? request.getParameter("action") : null;
 		
 		OutputStream outputStream = response.getOutputStream();
 		
-		JsonFactory jsonFactory = new JsonFactory();
-		JsonGenerator jg = jsonFactory.createJsonGenerator( response.getOutputStream() );
-//		jg.writeFieldName(name);
-//		jg.writeString(text, offset, len);
 		ObjectMapper mapper = new ObjectMapper();
-		
-		
-//		PrintWriter pw = response.getWriter();
-//		if ( INITIATE.equalsIgnoreCase(action) ) {
-//			request.getParameterMap();
-//			Object databaseO = request.getParameter("database");
-//			Object hostO = request.getParameter("host");
-//			Object userO = request.getParameter("user");
-//			Object passwordO = request.getParameter("password");
-//			AvailableDatabase availableDatabase = databaseO != null ? AvailableDatabase.getAvailableDatabase( Integer.valueOf( (String) databaseO ) ) : null;
-//			String host = hostO != null ? (String) hostO : null;
-//			String user = userO != null ? (String) userO : null;
-//			String password = passwordO != null ? (String) passwordO : null;
-//			MonitorInfo monitorInfo = new MonitorInfo();
-//			monitorInfo.setDatabase(availableDatabase);
-//			monitorInfo.setHost(host);
-//			monitorInfo.setUser(user);
-//			monitorInfo.setPassword(password);
-//			try {
-//				ConnectionPool.getInstance().openConnection( monitorInfo );
-//				pw.write("{ \"success\" : true , \"msg\" : \"Conexão aberta com sucesso\" , \"data\" : { \"token\" : \"" + host +"\"  } } ");
-//			} catch (ClassNotFoundException e) {
-//				pw.write("{ \"success\" : false , \"msg\" : \"Drive de conexão não encontrado.\" }");
-//				e.printStackTrace();
-//			} catch (SQLException e) {
-//				pw.write("{ \"success\" : false , \"msg\" : \"Não foi possivel abrir a conexão, verifique as informações de conexão.\" }");
-//				e.printStackTrace();
-//			}
-//			return;
-//		}
+     	if ( INITIATE.equalsIgnoreCase(action) ) {
+     		ObjectReader objectReader =  mapper.reader(MonitorInfo.class);
+         	MonitorInfo monitorInfo = objectReader.readValue( request.getParameter("form") );
+			try {
+				ConnectionPool.getInstance().openConnection( monitorInfo );
+				data.put("token", monitorInfo.getHost() );
+				mapper.writeValue( outputStream ,  new MonitorResponse( true , "Connection was open with success" , data ) );
+			} catch (ClassNotFoundException e) {
+				mapper.writeValue( outputStream ,  new MonitorResponse( false , "Was not possible to find the connection driver" , null ) );
+			} catch (SQLException e) {
+				mapper.writeValue( outputStream ,  new MonitorResponse( false , "Was not possible to open the connection, verify the connection information. Error: " + e.getMessage() , null ) );
+			}
+			return;
+		}
 //
 //		if (UPDATE.equalsIgnoreCase(action)) {
 //			Object monitorTitleO = request.getParameter("monitorTitle");
@@ -113,12 +99,11 @@ public class MonitorServlet extends HttpServlet {
 //			
 //			return;
 //		}
-		mapper.writeValue( outputStream ,  new MonitorResponse( true , "Da raduken ryu" ) );
-//		pw.write("{ \"success\" : true , \"msg\" : \"This is not a valid action\" }");
+		mapper.writeValue( outputStream ,  new MonitorResponse( true , "This is not a valid action" , null ) );
 	}
 
+	@Deprecated
 	private String convertResultSetToJSON(ResultSet rs) throws SQLException {
-		
 		int colCount = rs.getMetaData().getColumnCount();
 		StringBuilder sb = new StringBuilder("{ \"rows\" : [");
 //		int total = rs.getRow();

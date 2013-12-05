@@ -11,7 +11,11 @@ $(document).ready(function() {
 			$.ajax({
 				url  : $("#form-new-monitor").attr("action") ,
 				type : "POST",
-				data : $("#form-new-monitor").serialize() ,
+				dataType: 'json',
+				data : { 
+					action : $("#form-new-monitor").find("#action").val(),
+					form   : JSON.stringify( form2js('form-new-monitor', '.', false ) )
+				},
 				success : successfullyOpenConnection,
 				error : manageException,
 				complete : function() {
@@ -132,11 +136,11 @@ function successfullyOpenConnection( data , status, jqXHR) {
 	if (json.success) {
 		$('#modalMonitor').modal('hide');	
 		$('#modalQuery').modal('show');
-		addSuccessMessage( $("#form-monitor-query-messages")[0] , json.msg );
+		addSuccessMessage( $("#form-monitor-query-messages")[0] , json.message );
 		if(json.data)
 			$("#form-monitor-query").find("#token").val( json.data.token );
 	} else {
-		addErrorMessage( $("#form-new-monitor-messages")[0] , json.msg );
+		addErrorMessage( $("#form-new-monitor-messages")[0] , json.message );
 	}
 }
 
