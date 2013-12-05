@@ -1,6 +1,7 @@
 package com.efraimgentil.dbmonitoring.servlets;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -17,9 +18,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.impl.JsonWriteContext;
+import org.codehaus.jackson.map.ObjectMapper;
+
 import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
+import com.efraimgentil.dbmonitoring.models.MonitorResponse;
 
 @WebServlet({ "/monitor" })
 public class MonitorServlet extends HttpServlet {
@@ -40,68 +47,78 @@ public class MonitorServlet extends HttpServlet {
 		response.setCharacterEncoding("UTF-8");
 		
 		String action = request.getParameter("action") != null ? request.getParameter("action") : null;
-
-		PrintWriter pw = response.getWriter();
-		if ( INITIATE.equalsIgnoreCase(action) ) {
-			request.getParameterMap();
-			Object databaseO = request.getParameter("database");
-			Object hostO = request.getParameter("host");
-			Object userO = request.getParameter("user");
-			Object passwordO = request.getParameter("password");
-			AvailableDatabase availableDatabase = databaseO != null ? AvailableDatabase.getAvailableDatabase( Integer.valueOf( (String) databaseO ) ) : null;
-			String host = hostO != null ? (String) hostO : null;
-			String user = userO != null ? (String) userO : null;
-			String password = passwordO != null ? (String) passwordO : null;
-			MonitorInfo monitorInfo = new MonitorInfo();
-			monitorInfo.setDatabase(availableDatabase);
-			monitorInfo.setHost(host);
-			monitorInfo.setUser(user);
-			monitorInfo.setPassword(password);
-			try {
-				ConnectionPool.getInstance().openConnection( monitorInfo );
-				pw.write("{ \"success\" : true , \"msg\" : \"Conexão aberta com sucesso\" , \"data\" : { \"token\" : \"" + host +"\"  } } ");
-			} catch (ClassNotFoundException e) {
-				pw.write("{ \"success\" : false , \"msg\" : \"Drive de conexão não encontrado.\" }");
-				e.printStackTrace();
-			} catch (SQLException e) {
-				pw.write("{ \"success\" : false , \"msg\" : \"Não foi possivel abrir a conexão, verifique as informações de conexão.\" }");
-				e.printStackTrace();
-			}
-			return;
-		}
-
-		if (UPDATE.equalsIgnoreCase(action)) {
-			Object monitorTitleO = request.getParameter("monitorTitle");
-			Object tokenO = request.getParameter("token");
-			Object queryO = request.getParameter("query");
-			String token = tokenO != null ? (String) tokenO : null;
-			String monitorTitle = monitorTitleO != null ? (String) monitorTitleO : null;
-			String query = queryO != null ? (String) queryO : null;
-			if ( query != null && ( token != null && !token.isEmpty() ) )
-				try {
-					Connection conn = ConnectionPool.getInstance().getConnection( token );
-					Statement stmt = conn.createStatement();
-					ResultSet rs = stmt.executeQuery(query);
-					SimpleDateFormat sdf = new SimpleDateFormat(
-							"dd/MM/yyyy as HH:mm:ss");
-					pw.write("{ \"success\" : true , \"msg\" : \"Consulta realizada com sucesso\" , \"data\" : "
-							+ convertResultSetToJSON(rs)
-							+ " , \"dataAtualizacao\" : \""
-							+ sdf.format(new Date()) + "\" }");
-				} catch (SQLException e) {
-					pw.write("{ \"success\" : false , \"msg\" : \"Não foi possivel realizar a consulta, verifiquer os dados da consulta.\" }");
-					e.printStackTrace();
-				}
-			else
-				pw.write("{ \"success\" : true , \"msg\" : \"Não a nenhuma consulta a ser realizada\" }");
-			
-			return;
-		}
 		
-		pw.write("{ \"success\" : true , \"msg\" : \"This is not a valid action\" }");
+		OutputStream outputStream = response.getOutputStream();
+		
+		JsonFactory jsonFactory = new JsonFactory();
+		JsonGenerator jg = jsonFactory.createJsonGenerator( response.getOutputStream() );
+//		jg.writeFieldName(name);
+//		jg.writeString(text, offset, len);
+		ObjectMapper mapper = new ObjectMapper();
+		
+		
+//		PrintWriter pw = response.getWriter();
+//		if ( INITIATE.equalsIgnoreCase(action) ) {
+//			request.getParameterMap();
+//			Object databaseO = request.getParameter("database");
+//			Object hostO = request.getParameter("host");
+//			Object userO = request.getParameter("user");
+//			Object passwordO = request.getParameter("password");
+//			AvailableDatabase availableDatabase = databaseO != null ? AvailableDatabase.getAvailableDatabase( Integer.valueOf( (String) databaseO ) ) : null;
+//			String host = hostO != null ? (String) hostO : null;
+//			String user = userO != null ? (String) userO : null;
+//			String password = passwordO != null ? (String) passwordO : null;
+//			MonitorInfo monitorInfo = new MonitorInfo();
+//			monitorInfo.setDatabase(availableDatabase);
+//			monitorInfo.setHost(host);
+//			monitorInfo.setUser(user);
+//			monitorInfo.setPassword(password);
+//			try {
+//				ConnectionPool.getInstance().openConnection( monitorInfo );
+//				pw.write("{ \"success\" : true , \"msg\" : \"Conexão aberta com sucesso\" , \"data\" : { \"token\" : \"" + host +"\"  } } ");
+//			} catch (ClassNotFoundException e) {
+//				pw.write("{ \"success\" : false , \"msg\" : \"Drive de conexão não encontrado.\" }");
+//				e.printStackTrace();
+//			} catch (SQLException e) {
+//				pw.write("{ \"success\" : false , \"msg\" : \"Não foi possivel abrir a conexão, verifique as informações de conexão.\" }");
+//				e.printStackTrace();
+//			}
+//			return;
+//		}
+//
+//		if (UPDATE.equalsIgnoreCase(action)) {
+//			Object monitorTitleO = request.getParameter("monitorTitle");
+//			Object tokenO = request.getParameter("token");
+//			Object queryO = request.getParameter("query");
+//			String token = tokenO != null ? (String) tokenO : null;
+//			String monitorTitle = monitorTitleO != null ? (String) monitorTitleO : null;
+//			String query = queryO != null ? (String) queryO : null;
+//			if ( query != null && ( token != null && !token.isEmpty() ) )
+//				try {
+//					Connection conn = ConnectionPool.getInstance().getConnection( token );
+//					Statement stmt = conn.createStatement();
+//					ResultSet rs = stmt.executeQuery(query);
+//					SimpleDateFormat sdf = new SimpleDateFormat(
+//							"dd/MM/yyyy as HH:mm:ss");
+//					pw.write("{ \"success\" : true , \"msg\" : \"Consulta realizada com sucesso\" , \"data\" : "
+//							+ convertResultSetToJSON(rs)
+//							+ " , \"dataAtualizacao\" : \""
+//							+ sdf.format(new Date()) + "\" }");
+//				} catch (SQLException e) {
+//					pw.write("{ \"success\" : false , \"msg\" : \"Não foi possivel realizar a consulta, verifiquer os dados da consulta.\" }");
+//					e.printStackTrace();
+//				}
+//			else
+//				pw.write("{ \"success\" : true , \"msg\" : \"Não a nenhuma consulta a ser realizada\" }");
+//			
+//			return;
+//		}
+		mapper.writeValue( outputStream ,  new MonitorResponse( true , "Da raduken ryu" ) );
+//		pw.write("{ \"success\" : true , \"msg\" : \"This is not a valid action\" }");
 	}
 
 	private String convertResultSetToJSON(ResultSet rs) throws SQLException {
+		
 		int colCount = rs.getMetaData().getColumnCount();
 		StringBuilder sb = new StringBuilder("{ \"rows\" : [");
 //		int total = rs.getRow();

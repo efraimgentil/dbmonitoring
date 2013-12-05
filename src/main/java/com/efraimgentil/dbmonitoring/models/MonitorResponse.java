@@ -1,5 +1,7 @@
 package com.efraimgentil.dbmonitoring.models;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * 
  * @author Efraim Gentil
@@ -7,10 +9,13 @@ package com.efraimgentil.dbmonitoring.models;
  */
 public class MonitorResponse {
 	
+	@JsonProperty("success")
 	private Boolean success;
 	
+	@JsonProperty("message")
 	private String message;
 	
+	@JsonProperty("data")
 	private String data;
 	
 	public MonitorResponse() {	}
