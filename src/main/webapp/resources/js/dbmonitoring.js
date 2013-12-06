@@ -37,22 +37,24 @@ $(document).ready(function() {
 				error : manageException,
 				complete : function() {
 					btn.classList.remove( "disabled" );
+					$("#menu").find("#btn-stop-monitor").removeClass("disabled");
 				}
 			});
 		}
 	});
 	
-
-	$("#btnStopMonitor").click(function() {
-		if (!$(this).hasClass("disabled")) {
-			if (interval != null) {
-				clearInterval(interval);
-				interval = null;
-				$("#btnIniciarMonitoramento").removeClass("disabled");
-				$("#btnStopMonitoramento").addClass("disabled");
-			}
+	$("#btn-stop-monitor").click(function() {
+		var btn = this;
+		var btnClassList = btn.classList;
+		if (!btnClassList.contains("disabled")) {
+			btnClassList.add("disabled");
+			stopInterval();
+			$('#modal-query').modal('show');
+			$("#btn-add-new-monitor").removeClass("hidden");
+			$("#btn-stop-monitor").addClass("hidden");
 		}
 	});
+	
 });
 
 function update() {
@@ -104,8 +106,16 @@ function updateResultArea(json){
 				$("#result").append( arr.join("") );
 			}
 		} else {
-			$("#result").append("<span style='color:red;'>" + json.msg + "</span>");
+			$("#result").append("<span style='color:red;'>" + json.message + "</span>");
+			stopInterval();
 		}
+	}
+}
+
+function stopInterval(){
+	if (interval != null) {
+		clearInterval(interval);
+		interval = null;
 	}
 }
 
@@ -134,8 +144,8 @@ function manageException (jqXHR, status, errorThrown) {
 function successfullyOpenConnection( data , status, jqXHR) {
 	var json =  data;
 	if (json.success) {
-		$('#modalMonitor').modal('hide');	
-		$('#modalQuery').modal('show');
+		$('#modal-monitor').modal('hide');	
+		$('#modal-query').modal('show');
 		addSuccessMessage( $("#form-monitor-query-messages")[0] , json.message );
 		if(json.data)
 			$("#form-monitor-query").find("#token").val( json.data.token );
@@ -149,9 +159,11 @@ function successfullyCreateQuery( data , status , jqXHR ){
 		updateResultArea(data);
 		var refreshTime = $("#form-monitor-query").find("#refresh-time").val() || 5;
 		interval = window.setInterval( update , refreshTime * 1000);
-		$('#modalQuery').modal('hide');
+		$('#modal-query').modal('hide');
+		$("#btn-stop-monitor").removeClass("hidden");
+		$("#btn-add-new-monitor").addClass("hidden");
 	}else{
-		addErrorMessage( $("#form-monitor-query-messages")[0] , data.msg );
+		addErrorMessage( $("#form-monitor-query-messages")[0] , data.message );
 	}
 }
 

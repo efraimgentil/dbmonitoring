@@ -91,15 +91,15 @@ public class MonitorServlet extends HttpServlet {
 					monitorResponse.createRows(rs);
 					mapper.writeValue( outputStream , monitorResponse );
 				} catch (SQLException e) {
-					mapper.writeValue( outputStream ,  new MonitorResponse( true , "Was not possible to execute the query. Error: " + e.getMessage() , null ) ); 
+					mapper.writeValue( outputStream ,  new MonitorResponse( false , "Was not possible to execute the query. Error: " + e.getMessage() , null ) ); 
 					e.printStackTrace();
 				}
 			else
-				mapper.writeValue( outputStream ,  new MonitorResponse( true , "There is no query to be executed" , null ) );
+				mapper.writeValue( outputStream ,  new MonitorResponse( false , "There is no query to be executed" , null ) );
 			
 			return;
 		}
-		mapper.writeValue( outputStream ,  new MonitorResponse( true , "This is not a valid action" , null ) );
+		mapper.writeValue( outputStream ,  new MonitorResponse( false , "This is not a valid action" , null ) );
 	}
 
 }
