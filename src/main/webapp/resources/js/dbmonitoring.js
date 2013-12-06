@@ -43,7 +43,7 @@ $(document).ready(function() {
 	});
 	
 
-	$("#btnStopMonitoramento").click(function() {
+	$("#btnStopMonitor").click(function() {
 		if (!$(this).hasClass("disabled")) {
 			if (interval != null) {
 				clearInterval(interval);
@@ -148,7 +148,6 @@ function successfullyCreateQuery( data , status , jqXHR ){
 	if (data.success) {
 		updateResultArea(data);
 		var refreshTime = $("#form-monitor-query").find("#refresh-time").val() || 5;
-		debugger;
 		interval = window.setInterval( update , refreshTime * 1000);
 		$('#modalQuery').modal('hide');
 	}else{
