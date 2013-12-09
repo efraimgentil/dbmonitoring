@@ -54,7 +54,7 @@ public class MonitorServlet extends HttpServlet {
 		MonitorService monitorService = new MonitorService();
 
 		String action = request.getParameter("action") != null ? request
-				.getParameter("action") : null;
+				.getParameter("action").toUpperCase() : null;
 
 		OutputStream outputStream = response.getOutputStream();
 

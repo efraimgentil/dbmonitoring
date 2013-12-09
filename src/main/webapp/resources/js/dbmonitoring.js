@@ -68,10 +68,11 @@ function update() {
 			query : query,
 			token : token
 		},
-		success : function(data, status, jqXHR) {
-			updateResultArea(data);
-		},
-		error : manageException
+		success :  updateResultArea,
+		error :  function(jqXHR, status, errorThrown) {
+			manageException ( jqXHR , status , errorThrown );
+			stopInterval();
+		}
 	});
 }
 
@@ -136,8 +137,9 @@ function enableFormNewMonitor(){
 
 function manageException (jqXHR, status, errorThrown) {
 	if (console) {
-		console.log("Well that was unexpected" , errorThrown); 
-		console.log("Error: " + console.log(jqXHR));
+		console.log("Well that was unexpected" , errorThrown);
+		console.log("Status: ", status );
+		console.log("Error: " , jqXHR );
 	}
 }
 
