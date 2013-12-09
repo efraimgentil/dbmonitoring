@@ -9,7 +9,7 @@ package com.efraimgentil.dbmonitoring.constants;
 public enum AvailableDatabase {
 	
 	POSTGRES(1 , "Postgres" , "jdbc:postgresql://" , "org.postgresql.Driver"),
-	MYSQL(2 , "MySQL" , ""  , "com.mysql.jdbc.Driver"),
+	MYSQL(2 , "MySQL" , "jdbc:mysql://"  , "com.mysql.jdbc.Driver"),
 	H2(3 , "H3" , "jdbc:h2:"  , "org.h2.Driver");
 	
 	private Integer id;

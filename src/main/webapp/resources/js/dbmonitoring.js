@@ -214,9 +214,9 @@ function validateNewMonitorForm() {
 	var user = $("#user").val();
 	if(user.length == 0)
 		errors.push("<b>User</b> can't be empty");
-	var password = $("#password").val();
-	if(password.length == 0)
-		errors.push("<b>Password</b> can't be empty");
+//	var password = $("#password").val();
+//	if(password.length == 0)
+//		errors.push("<b>Password</b> can't be empty");
 	if(errors.length > 0){
 		addErrorMessage( divErrors, errors.join("<br/>") );
 		return false;
