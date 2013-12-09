@@ -34,6 +34,9 @@ public class MonitorInfo {
 	@JsonProperty("monitorTitle")
 	private String monitorTitle;
 	
+	@JsonProperty("query")
+	private String query;
+	
 	@JsonProperty("refreshTime")
 	private Integer refreshTime;
 	
@@ -86,6 +89,13 @@ public class MonitorInfo {
 	public void setRefreshTime(Integer refreshTime) {
 		this.refreshTime = refreshTime;
 	}
-	
+
+	public String getQuery() {
+		return query;
+	}
+
+	public void setQuery(String query) {
+		this.query = query;
+	}
 	
 }
