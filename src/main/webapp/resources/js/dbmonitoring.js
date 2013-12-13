@@ -160,6 +160,8 @@ function successfullyCreateQuery( data , status , jqXHR ){
 	if (data.success) {
 		updateResultArea(data);
 		var refreshTime = $("#form-monitor-query").find("#refresh-time").val() || 5;
+		var monitorTitle = $("#form-monitor-query").find("#monitor-title").val() || "No title defined";
+		$("#title-monitoring").html(monitorTitle);
 		interval = window.setInterval( update , refreshTime * 1000);
 		$('#modal-query').modal('hide');
 		$("#btn-stop-monitor").removeClass("hidden");
