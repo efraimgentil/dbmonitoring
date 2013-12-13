@@ -1,5 +1,9 @@
 package com.efraim.dbmonitoring.connections;
 
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertSame;
+
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.testng.annotations.AfterMethod;
@@ -7,10 +11,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
+import com.efraimgentil.dbmonitoring.connections.exceptions.ConnectionNotFound;
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
-
-import static org.testng.AssertJUnit.*;
 
 public class ConnectionPoolIT {
 
@@ -35,9 +38,24 @@ public class ConnectionPoolIT {
 		connectionPool.disconnect();
 	}
 
-	@Test(description = "Should successfully open a H2 connection", groups = { "success" })
-	public void openConnection() throws ClassNotFoundException, SQLException {
-		connectionPool.openConnection(monitorInfo);
+	@Test(description = "Should successfully open a H2 connection and return a token", groups = { "success" })
+	public void shouldSuccessfullyOpenConnection() throws ClassNotFoundException, SQLException {
+		String token = connectionPool.openConnection(monitorInfo);
+		assertNotNull(token);
+	}
+	
+	@Test(description = "Should retrieve the connection in the passed token" , groups = { "success" })
+	public void shouldRetriveTheConnection() throws ClassNotFoundException, SQLException, ConnectionNotFound{
+		String token = connectionPool.openConnection(monitorInfo);
+		Connection connection = connectionPool.getConnection(token);
+		assertNotNull(connection);
+		assertSame( true , !connection.isClosed() );
+	}
+	
+	@Test(description = "Should throw a exception when the connection is not found for the passed token" ,groups = { "failure" },
+			expectedExceptions = { ConnectionNotFound.class })
+	public void shouldFailToRetrieveAConnection() throws ConnectionNotFound{
+		connectionPool.getConnection("!!ANYTHING??");
 	}
 
 	@Test(description = "Should try and fail to open a POSTGRES connection", groups = { "failure" }, expectedExceptions = { SQLException.class })

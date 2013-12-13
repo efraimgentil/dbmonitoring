@@ -6,10 +6,10 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.management.monitor.MonitorMBean;
-
+import com.efraimgentil.dbmonitoring.connections.exceptions.ConnectionNotFound;
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
+import com.efraimgentil.dbmonitoring.utils.StringUtils;
 
 /**
  * 
@@ -32,23 +32,43 @@ public class ConnectionPool {
 		return connectionPool;
 	}
 	
-	public Connection getConnection(String host) {
-		return (Connection) connections.get(host);
+	/**
+	 * Returns the connection mapped in the informed token
+	 * @param token
+	 * @return
+	 * @throws ConnectionNotFound 
+	 */
+	public Connection getConnection(String token) throws ConnectionNotFound {
+		if(!connections.containsKey(token))
+			throw new ConnectionNotFound("Has not possible to find the connection to the iformed token: " + token);
+		return connections.get( token );
 	}
 	
-	public void openConnection(MonitorInfo monitorInfo) throws SQLException, ClassNotFoundException {
-		String host = monitorInfo.getHost();
-		if (connections.get( host  ) == null) {
+	/**
+	 * This method is used to open a connection and map it in a connection map,
+	 * the key(token) to retrieve the connection is the host + user + password MD5
+	 * @param monitorInfo
+	 * @return
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 */
+	public String openConnection(MonitorInfo monitorInfo) throws SQLException, ClassNotFoundException {
+		String token = new StringUtils().md5( monitorInfo.getHost() + monitorInfo.getUser() + monitorInfo.getPassword() );
+		if (connections.get( token ) == null) {
 			String user = monitorInfo.getUser();
 			String password = monitorInfo.getPassword();
 			AvailableDatabase availableDatabase = monitorInfo.getDatabase();
 			
 			Class.forName( availableDatabase.getDriver() );
-			String url = availableDatabase.getConnectionUrl() + host;
-			connections.put( host , DriverManager.getConnection( url, user, password ) );
+			String url = availableDatabase.getConnectionUrl() + monitorInfo.getHost();
+			connections.put( token , DriverManager.getConnection( url, user, password ) );
 		}
+		return token;
 	}
 	
+	/**
+	 * Close all open connections
+	 */
 	public void disconnect() {
 		for (String key : connections.keySet()) {
 			try {

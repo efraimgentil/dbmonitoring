@@ -12,6 +12,7 @@ import java.util.Map;
 import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 import com.efraimgentil.dbmonitoring.models.MonitorResponse;
+import com.efraimgentil.dbmonitoring.utils.StringUtils;
 
 /**
  * 
@@ -20,11 +21,14 @@ import com.efraimgentil.dbmonitoring.models.MonitorResponse;
  */
 public class MonitorService {
 	
+	private StringUtils stringUtils;
+	
 	public MonitorResponse openConnection(MonitorInfo monitorInfo){
 		try {
+			stringUtils = new StringUtils();
 			ConnectionPool.getInstance().openConnection(monitorInfo);
 			Map<String, Object> data = new HashMap<>();
-			data.put("token", monitorInfo.getHost());
+			data.put("token", stringUtils.md5( monitorInfo.getHost() ) );
 			return new MonitorResponse(true, "Connection was open with success", data);
 		} catch (ClassNotFoundException e) {
 			return new MonitorResponse(false, "Was not possible to find the connection driver", null );
