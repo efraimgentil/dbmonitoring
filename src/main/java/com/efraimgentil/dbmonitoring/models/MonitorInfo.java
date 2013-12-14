@@ -1,5 +1,8 @@
 package com.efraimgentil.dbmonitoring.models;
 
+import java.util.Calendar;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
@@ -8,14 +11,23 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
 import com.efraimgentil.dbmonitoring.jackson.AvailableDatabaseDeserializer;
 import com.efraimgentil.dbmonitoring.jackson.AvailableDatabaseSerializer;
+import com.efraimgentil.dbmonitoring.models.exceptions.NoMonitorTokenException;
+import com.efraimgentil.dbmonitoring.models.exceptions.WrongTokenFormatException;
 
 /**
  * 
  * @author Efraim Gentil
- * @date Nov 28, 2013
+ * @email efraim.gentil@gmail.com
+ * @date Dec 13, 2013
+ *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MonitorInfo {
+	
+	@JsonIgnore
+	private static final int CONNECTION_TOKEN = 0;
+	@JsonIgnore
+	private static final int MONITOR_TOKEN = 1;
 	
 	@JsonProperty("database")
 	@JsonSerialize( using = AvailableDatabaseSerializer.class  )
@@ -40,8 +52,41 @@ public class MonitorInfo {
 	@JsonProperty("refreshTime")
 	private Integer refreshTime;
 	
+	@JsonProperty("token")
+	private String token;
+	
+	@JsonIgnore
+	private Calendar lastAccess; 
+	
 	public MonitorInfo() {	}
-
+	
+	protected String verifyAndReturnTokenPart(int part) throws NoMonitorTokenException, WrongTokenFormatException{
+		if(token == null)
+			throw new NoMonitorTokenException();
+		String[] parts = token.split("-");
+		if(parts.length <= 1)
+			throw new WrongTokenFormatException();
+		return parts[part];
+	}
+	
+	public String getConnectionToken() throws NoMonitorTokenException, WrongTokenFormatException{
+		return verifyAndReturnTokenPart( CONNECTION_TOKEN );
+	}
+	
+	public String getMonitorToken() throws NoMonitorTokenException, WrongTokenFormatException{
+		return verifyAndReturnTokenPart( MONITOR_TOKEN );
+	}
+	
+	public void setConnectionToken( String token ) throws NoMonitorTokenException, WrongTokenFormatException{
+		String monitorToken= verifyAndReturnTokenPart( MONITOR_TOKEN );
+		setToken( token + "-" +  monitorToken);
+	}
+	
+	public void setMonitorToken( String token ) throws NoMonitorTokenException, WrongTokenFormatException{
+		String connectionToken =  verifyAndReturnTokenPart( CONNECTION_TOKEN );
+		setToken( connectionToken + "-" +  token);
+	}
+	
 	public AvailableDatabase getDatabase() {
 		return database;
 	}
@@ -96,6 +141,14 @@ public class MonitorInfo {
 
 	public void setQuery(String query) {
 		this.query = query;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
 	}
 	
 }

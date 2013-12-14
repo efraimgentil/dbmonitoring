@@ -40,6 +40,7 @@ public class MonitorServlet extends HttpServlet {
 
 	private static final String INITIATE = "INITIATE";
 	private static final String UPDATE = "UPDATE";
+	private static final String OPEN_CONNECTION = "OPEN_CONNECTION";
 
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
@@ -60,12 +61,16 @@ public class MonitorServlet extends HttpServlet {
 
 		ObjectMapper mapper = new ObjectMapper();
 		
+		
+		MonitorInfo monitorInfo;
 		switch (action) {
-			case INITIATE:
-				ObjectReader objectReader = mapper.reader(MonitorInfo.class);
-				MonitorInfo monitorInfo = objectReader.readValue(request.getParameter("form"));
+			case OPEN_CONNECTION:
+				monitorInfo = getObjectReader(mapper).readValue(request.getParameter("form"));
 				MonitorResponse monitorResponse = monitorService.openConnection(monitorInfo);
 				mapper.writeValue(outputStream, monitorResponse);
+				break;
+			case INITIATE:
+				monitorInfo = getObjectReader(mapper).readValue(request.getParameter("form"));
 				break;
 			case UPDATE:
 				Object monitorTitleO = request.getParameter("monitorTitle");
@@ -89,5 +94,10 @@ public class MonitorServlet extends HttpServlet {
 		}
 
 	}
-
+	
+	private ObjectReader getObjectReader(ObjectMapper mapper){
+		return mapper.reader(MonitorInfo.class);
+	}
+	
+	
 }
