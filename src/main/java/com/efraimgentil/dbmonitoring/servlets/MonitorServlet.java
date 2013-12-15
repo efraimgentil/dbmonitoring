@@ -55,34 +55,31 @@ public class MonitorServlet extends HttpServlet {
 		MonitorService monitorService = new MonitorService();
 
 		String action = request.getParameter("action") != null ? request
-				.getParameter("action").toUpperCase() : null;
+				.getParameter("action").toUpperCase() : "";
 
 		OutputStream outputStream = response.getOutputStream();
 
 		ObjectMapper mapper = new ObjectMapper();
-		
-		
+
 		MonitorInfo monitorInfo;
+		MonitorResponse monitorResponse;
 		switch (action) {
 			case OPEN_CONNECTION:
-				monitorInfo = getObjectReader(mapper).readValue(request.getParameter("form"));
-				MonitorResponse monitorResponse = monitorService.openConnection(monitorInfo);
+				monitorInfo = getObjectReader(mapper).readValue( request.getParameter("form") );
+				monitorResponse = monitorService.openConnection(monitorInfo);
 				mapper.writeValue(outputStream, monitorResponse);
 				break;
 			case INITIATE:
-				monitorInfo = getObjectReader(mapper).readValue(request.getParameter("form"));
+				monitorInfo = getObjectReader(mapper).readValue( request.getParameter("form") );
+				monitorResponse = monitorService.initiateMonitor(monitorInfo);
+				mapper.writeValue(outputStream, monitorResponse);
 				break;
 			case UPDATE:
-				Object monitorTitleO = request.getParameter("monitorTitle");
 				Object tokenO = request.getParameter("token");
-				Object queryO = request.getParameter("query");
 				String token = tokenO != null ? (String) tokenO : null;
-				String monitorTitle = monitorTitleO != null ? (String) monitorTitleO
-						: null;
-				String query = queryO != null ? (String) queryO : null;
-				if (query != null && (token != null && !token.isEmpty())) {
+				if ( (token != null && !token.isEmpty()) ) {
 					mapper.writeValue(outputStream,
-							monitorService.processQuery(token, query));
+							monitorService.processQuery(token ));
 				} else {
 					mapper.writeValue(outputStream, new MonitorResponse(false,
 							"There is no query to be executed", null));

@@ -6,7 +6,7 @@
 <fmt:setBundle basename='messages' />
 
 <form id="form-monitor-query" action="${pageContext.request.contextPath}/monitor"  class="form-horizontal" role="form">
-	<input type="hidden" id="action" name="action" value="update" >
+	<input type="hidden" id="action" name="action" value="initiate" >
 	<input type="hidden" id="token" name="token" value="" >
 	
 	<div class="row" style="margin-top:15px">

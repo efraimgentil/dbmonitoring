@@ -28,12 +28,18 @@ public class MonitorService {
 	
 	private StringUtils stringUtils;
 	
+	private MonitorInfoPoolService monitorInfoPoolService;
+	
+	private ConnectionPool connectionPool;
+	
 	public MonitorResponse openConnection(MonitorInfo monitorInfo){
 		try {
-			String token = ConnectionPool.getInstance().openConnection(monitorInfo);
+			String token = getConnectionPool().openConnection(monitorInfo);
 			Map<String, Object> data = new HashMap<>();
-			token = "-" + stringUtils.md5( new Date().toString() );
+			token += "-" + getStringUtils().md5( new Date().toString() );
 			data.put("token", token );
+			monitorInfo.setToken(token);
+			getMonitorInfoPoolService().addMonitor(monitorInfo);
 			return new MonitorResponse(true, "Connection was open with success", data);
 		} catch (ClassNotFoundException e) {
 			return new MonitorResponse(false, "Was not possible to find the connection driver", null );
@@ -46,11 +52,13 @@ public class MonitorService {
 	
 	public MonitorResponse initiateMonitor(MonitorInfo monitorInfo){
 		try {
-			updateMappedMonitorInfo(monitorInfo);
-			Connection conn = ConnectionPool.getInstance().getConnection( monitorInfo.getConnectionToken() );
+			Connection conn = getConnectionPool().getConnection( monitorInfo.getConnectionToken() );
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery( monitorInfo.getQuery() );
-			MonitorResponse monitorResponse = new MonitorResponse( true , "Monitor successfully initiated" , new HashMap<String,Object>() );
+			getMonitorInfoPoolService().updateMappedMonitorInfo(monitorInfo);
+			Map<String,Object> data = new HashMap<String,Object>();
+			data.put("token", monitorInfo.getToken() );
+			MonitorResponse monitorResponse = new MonitorResponse( true , "Monitor successfully initiated" , data );
 			monitorResponse.createRows(rs);
 			return monitorResponse;
 		} catch (SQLException e) {
@@ -60,11 +68,12 @@ public class MonitorService {
 		}
 	}
 	
-	public MonitorResponse processQuery( String token , String query ){
+	public MonitorResponse processQuery( String token ){
 		try {
-			Connection conn = ConnectionPool.getInstance().getConnection( token );
+			MonitorInfo monitorInfo = getMonitorInfoPoolService().getMonitor( token );
+			Connection conn = ConnectionPool.getInstance().getConnection( monitorInfo.getConnectionToken() );
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
+			ResultSet rs = stmt.executeQuery( monitorInfo.getQuery() );
 			SimpleDateFormat sdf = new SimpleDateFormat(
 					"dd/MM/yyyy as HH:mm:ss");
 			MonitorResponse monitorResponse = new MonitorResponse( true , null , new HashMap<String,Object>() );
@@ -94,22 +103,6 @@ public class MonitorService {
 			return new MonitorResponse( false , "Unexpected error. Error: " + e.getMessage() , null );
 	}
 	
-	/**
-	 * 
-	 * @param monitorInfo
-	 * @return
-	 * @throws WrongTokenFormatException 
-	 * @throws NoMonitorTokenException 
-	 */
-	public MonitorInfo updateMappedMonitorInfo( MonitorInfo monitorInfo ) throws NoMonitorTokenException, WrongTokenFormatException{
-		MonitorInfo mappedMonitor = monitors.get( monitorInfo.getToken() );
-		mappedMonitor.setQuery( monitorInfo.getQuery() );
-		mappedMonitor.setMonitorTitle( monitorInfo.getMonitorTitle() );
-		mappedMonitor.setRefreshTime( monitorInfo.getRefreshTime() );
-		String monitorToken = getStringUtils().md5( monitorInfo.getQuery() );
-		monitorInfo.setMonitorToken(monitorToken);
-		return mappedMonitor;
-	}
 	
 	public StringUtils getStringUtils() {
 		return stringUtils == null ? stringUtils = new StringUtils() : stringUtils;
@@ -117,6 +110,25 @@ public class MonitorService {
 
 	public void setStringUtils(StringUtils stringUtils) {
 		this.stringUtils = stringUtils;
+	}
+
+	public ConnectionPool getConnectionPool() {
+		if(connectionPool == null){
+			connectionPool = ConnectionPool.getInstance();
+		}
+		return connectionPool;
+	}
+
+	public void setConnectionPool(ConnectionPool connectionPool) {
+		this.connectionPool = connectionPool;
+	}
+
+	public MonitorInfoPoolService getMonitorInfoPoolService() {
+		return monitorInfoPoolService == null ? monitorInfoPoolService = MonitorInfoPoolService.getInstance() : monitorInfoPoolService ;
+	}
+
+	public void setMonitorInfoPoolService(MonitorInfoPoolService monitorInfoPoolService) {
+		this.monitorInfoPoolService = monitorInfoPoolService;
 	}
 	
 }

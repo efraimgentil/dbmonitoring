@@ -32,7 +32,10 @@ $(document).ready(function() {
 			$.ajax({
 				url  : $("#form-monitor-query").attr("action") ,
 				type : "POST",
-				data : $("#form-monitor-query").serialize() ,
+				data : {
+					action : $("#form-monitor-query").find("#action").val(),
+					form :   JSON.stringify( form2js('form-monitor-query', '.', false ) )
+				},
 				success : successfullyCreateQuery,
 				error : manageException,
 				complete : function() {
@@ -58,14 +61,12 @@ $(document).ready(function() {
 });
 
 function update() {
-	var query = $("#query").val();
 	var token = $("#token").val();
 	$.ajax({
 		url  : $("#form-monitor-query").attr("action"),
 		type : "POST",
 		data : {
 			action : "update",
-			query : query,
 			token : token
 		},
 		success :  updateResultArea,
