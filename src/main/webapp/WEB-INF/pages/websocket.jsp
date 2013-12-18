@@ -117,10 +117,10 @@
 	Chat.initialize = function() {
 		if (window.location.protocol == 'http:') {
 			Chat.connect('ws://' + window.location.host
-					+ '/dbmonitoring/ws/monitor');
+					+ '/dbmonitoring/webs/monitor');
 		} else {
 			Chat.connect('wss://' + window.location.host
-					+ '/dbmonitoring/ws/monitor');
+					+ '/dbmonitoring/webs/monitor');
 		}
 	};
 
