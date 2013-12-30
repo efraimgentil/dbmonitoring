@@ -7,6 +7,7 @@ import javax.websocket.Endpoint;
 import javax.websocket.server.ServerApplicationConfig;
 import javax.websocket.server.ServerEndpointConfig;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ public class ApplicationConfig implements ServerApplicationConfig {
 		logger.info("Get annotated endpoints");
 		Set<Class<?>> results = new HashSet<Class<?>>();
 		for (Class<?> clazz : scanned) {
-			if (clazz.getPackage().getName().startsWith("com.efraimgentil.dbmonitoring.servlets")) {
+			if (clazz.getPackage().getName().startsWith("com.efraimgentil.dbmonitoring.websocket")) {
 				results.add(clazz);
 			}
 		}
@@ -37,7 +38,6 @@ public class ApplicationConfig implements ServerApplicationConfig {
 	public Set<ServerEndpointConfig> getEndpointConfigs(
 			Set<Class<? extends Endpoint>> arg0) {
 		logger.info("Get endpoints configs");
-		// TODO Auto-generated method stub
 		return null;
 	}
 

@@ -56,10 +56,28 @@ public class MonitorInfo {
 	private String token;
 	
 	@JsonIgnore
-	private Calendar lastAccess; 
+	private Calendar lastAccess;
+	
+	//See get and set
+	@JsonProperty("action")
+	private String action;
 	
 	public MonitorInfo() {	}
 	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("MonitorInfo [database=").append(database)
+				.append(", host=").append(host).append(", user=").append(user)
+				.append(", password=").append(password)
+				.append(", monitorTitle=").append(monitorTitle)
+				.append(", query=").append(query).append(", refreshTime=")
+				.append(refreshTime).append(", token=").append(token)
+				.append(", lastAccess=").append(lastAccess).append(", action=")
+				.append(action).append("]");
+		return builder.toString();
+	}
+
 	protected String verifyAndReturnTokenPart(int part) throws NoMonitorTokenException, WrongTokenFormatException{
 		if(token == null)
 			throw new NoMonitorTokenException();
@@ -69,19 +87,23 @@ public class MonitorInfo {
 		return parts[part];
 	}
 	
+	@JsonIgnore
 	public String getConnectionToken() throws NoMonitorTokenException, WrongTokenFormatException{
 		return verifyAndReturnTokenPart( CONNECTION_TOKEN );
 	}
 	
+	@JsonIgnore
 	public String getMonitorToken() throws NoMonitorTokenException, WrongTokenFormatException{
 		return verifyAndReturnTokenPart( MONITOR_TOKEN );
 	}
 	
+	@JsonIgnore
 	public void setConnectionToken( String token ) throws NoMonitorTokenException, WrongTokenFormatException{
 		String monitorToken= verifyAndReturnTokenPart( MONITOR_TOKEN );
 		setToken( token + "-" +  monitorToken);
 	}
 	
+	@JsonIgnore
 	public void setMonitorToken( String token ) throws NoMonitorTokenException, WrongTokenFormatException{
 		String connectionToken =  verifyAndReturnTokenPart( CONNECTION_TOKEN );
 		setToken( connectionToken + "-" +  token);
@@ -149,6 +171,14 @@ public class MonitorInfo {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+	
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
 	}
 	
 }

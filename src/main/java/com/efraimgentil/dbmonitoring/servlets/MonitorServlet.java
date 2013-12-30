@@ -51,16 +51,17 @@ public class MonitorServlet extends HttpServlet {
 		request.setCharacterEncoding("UTF-8");
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
-
+		
+		OutputStream outputStream = response.getOutputStream();
+		ObjectMapper mapper = new ObjectMapper();
 		MonitorService monitorService = new MonitorService();
 
 		String action = request.getParameter("action") != null ? request
 				.getParameter("action").toUpperCase() : "";
-
-		OutputStream outputStream = response.getOutputStream();
-
-		ObjectMapper mapper = new ObjectMapper();
-
+		
+		MonitorInfo monitorInf = getObjectReader(mapper).readValue( request.getParameter("form") );
+		monitorService.execute( monitorInf );
+		
 		MonitorInfo monitorInfo;
 		MonitorResponse monitorResponse;
 		switch (action) {
