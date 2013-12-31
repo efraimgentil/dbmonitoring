@@ -82,54 +82,48 @@
 	</div>
 </div>
 <script type="text/javascript">
+	var Monitor = {};
+	window.onload = function(){
+		
+		Monitor.connect = (function(host) {
+			if ('WebSocket' in window) {
+				Monitor.socket = new WebSocket(host);
+			} else if ('MozWebSocket' in window) {
+				Monitor.socket = new MozWebSocket(host);
+			} else {
+				console.log('Error: WebSocket is not supported by this browser.');
+				return;
+			}
 
-	var Chat = {};
-
-	Chat.connect = (function(host) {
-		if ('WebSocket' in window) {
-			Chat.socket = new WebSocket(host);
-		} else if ('MozWebSocket' in window) {
-			Chat.socket = new MozWebSocket(host);
-		} else {
-			console.log('Error: WebSocket is not supported by this browser.');
-			return;
-		}
-
-		Chat.socket.onopen = function() {
-			console.log('Info: WebSocket connection opened.');
-			document.getElementById('chat').onkeydown = function(event) {
-				if (event.keyCode == 13) {
-					Chat.sendMessage();
-				}
+			Monitor.socket.onopen = function() {
+				console.log('Info: WebSocket connection opened.');
 			};
-		};
 
-		Chat.socket.onclose = function() {
-			document.getElementById('chat').onkeydown = null;
-			console.log('Info: WebSocket closed.');
-		};
+			Monitor.socket.onclose = function() {
+				console.log('Info: WebSocket closed.');
+			};
 
-		Chat.socket.onmessage = function(message) {
-			console.log(message.data);
+			Monitor.socket.onmessage = function(message) {
+				console.log(message.data);
+			};
+		});
+		
+		Monitor.sendMessage = (function(message) {
+			console.log("Enviando dados" , message);
+			Monitor.socket.send(message);
+		});
+		
+		Monitor.initialize = function() {
+			if (window.location.protocol == 'http:') {
+				Monitor.connect('ws://' + window.location.host
+						+ '/dbmonitoring/webs/monitor');
+			} else {
+				Monitor.connect('wss://' + window.location.host
+						+ '/dbmonitoring/webs/monitor');
+			}
 		};
-	});
-
-	Chat.initialize = function() {
-		if (window.location.protocol == 'http:') {
-			Chat.connect('ws://' + window.location.host
-					+ '/dbmonitoring/webs/monitor');
-		} else {
-			Chat.connect('wss://' + window.location.host
-					+ '/dbmonitoring/webs/monitor');
-		}
+		
+		Monitor.initialize();
 	};
-
-	Chat.sendMessage = (function() {
-		var message = document.getElementById('chat').value;
-		if (message != '') {
-			Chat.socket.send(message);
-			document.getElementById('chat').value = '';
-		}
-	});
 </script>
 <jsp:include page="/WEB-INF/template/footer.jsp" />

@@ -15,6 +15,8 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
+import com.efraimgentil.dbmonitoring.models.MonitorResponse;
+import com.efraimgentil.dbmonitoring.services.MonitorService;
 
 @ServerEndpoint(value = "/webs/monitor")
 public class WSMonitor {
@@ -38,10 +40,8 @@ public class WSMonitor {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			monitorInfo = mapper.reader(MonitorInfo.class).readValue( message  );
-			System.out.println(monitorInfo);
-			
-			System.out.println( mapper.writeValueAsString(monitorInfo) );
-			
+			MonitorResponse monitorResponse = new MonitorService().execute( monitorInfo );
+			return mapper.writeValueAsString( monitorResponse );
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
