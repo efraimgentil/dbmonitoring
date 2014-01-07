@@ -1,30 +1,39 @@
 var interval = null;
 
-var Monitor = function(){
+var Monitor = function( area ){
 	
 	var scope = this;
 	
-	var resultArea = new ResultArea($("#result")[0]);
+	var supportsWebsocket = false;
+	
+	var resultArea =  area; 
 	
 	this.createConnection = function( eve ){
 		var btn = eve.target;
 		if (this.validateNewMonitorForm() && !btn.classList.contains( "disabled" ) ) {
 			btn.classList.add( "disabled" );
-			$.ajax({
-				url  : $("#form-new-monitor").attr("action") ,
-				type : "POST",
-				dataType: 'json',
-				data : { 
-					form   : JSON.stringify( form2js('form-new-monitor', '.', false ) )
-				},
-				success : function(data , status, jqXHR){
-					scope.successfullyOpenConnection(data);
-				},
-				error : this.manageException,
-				complete : function() {
-					btn.classList.remove( "disabled" );
-				}
-			});
+			var formData = JSON.stringify( form2js('form-new-monitor', '.', false ) );
+			
+			if(supportsWebsocket){
+				scope.onmessageHandler = scope.successfullyOpenConnection;
+				scope.sendMessage(formData);
+			}else{
+				$.ajax({
+					url  : $("#form-new-monitor").attr("action") ,
+					type : "POST",
+					dataType: 'json',
+					data : { 
+						form : formData
+					},
+					success : function(data , status, jqXHR){
+						scope.successfullyOpenConnection(data);
+					},
+					error : this.manageException,
+					complete : function() {
+						btn.classList.remove( "disabled" );
+					}
+				});
+			}
 		}
 	};
 	
@@ -44,7 +53,6 @@ var Monitor = function(){
 		return true;
 	};
 	
-	
 	this.successfullyOpenConnection = function( data , status, jqXHR) {
 		var json =  data;
 		if (json.success) {
@@ -58,40 +66,32 @@ var Monitor = function(){
 		}
 	};
 
-	this.successfullyCreateQuery = function( data , status , jqXHR ){
-		if (data.success) {
-			resultArea.updateResultArea(data);
-			var refreshTime = $("#form-monitor-query").find("#refresh-time").val() || 5;
-			var monitorTitle = $("#form-monitor-query").find("#monitor-title").val() || "No title defined";
-			$("#title-monitoring").html(monitorTitle);
-			interval = window.setInterval( this.update , refreshTime * 1000);
-			$('#modal-query').modal('hide');
-			$("#btn-stop-monitor").removeClass("hidden");
-			$("#btn-add-new-monitor").addClass("hidden");
-		}else{
-			this.addErrorMessage( $("#form-monitor-query-messages")[0] , data.message );
-		}
-	};
-
 	this.initiateMonitor = function( eve ) {
 		var btn = eve.target;
 		if (this.validateMonitorQueryForm() && !btn.classList.contains( "disabled" ) ) {
 			btn.classList.add( "disabled" );
-			$.ajax({
-				url  : $("#form-monitor-query").attr("action") ,
-				type : "POST",
-				data : {
-					form :   JSON.stringify( form2js('form-monitor-query', '.', false ) )
-				},
-				success : function(data , status, jqXHR){
-					scope.successfullyCreateQuery(data);
-				},
-				error : this.manageException,
-				complete : function() {
-					btn.classList.remove( "disabled" );
-					$("#menu").find("#btn-stop-monitor").removeClass("disabled");
-				}
-			});
+			var formData = JSON.stringify( form2js('form-monitor-query', '.', false ) ) ;
+			
+			if(supportsWebsocket){
+				scope.onmessageHandler = scope.successfullyCreateQuery;
+				scope.sendMessage(formData);
+			}else{
+				$.ajax({
+					url  : $("#form-monitor-query").attr("action") ,
+					type : "POST",
+					data : {
+						form : formData
+					},
+					success : function(data , status, jqXHR){
+						scope.successfullyCreateQuery(data);
+					},
+					error : this.manageException,
+					complete : function() {
+						btn.classList.remove( "disabled" );
+						$("#menu").find("#btn-stop-monitor").removeClass("disabled");
+					}
+				});
+			}
 		}
 	};
 	
@@ -107,6 +107,25 @@ var Monitor = function(){
 			return false;
 		}
 		return true;
+	};
+
+	this.successfullyCreateQuery = function( data , status , jqXHR ){
+		if (data.success) {
+			resultArea.updateResultArea(data);
+			var refreshTime = $("#form-monitor-query").find("#refresh-time").val() || 5;
+			var monitorTitle = $("#form-monitor-query").find("#monitor-title").val() || "No title defined";
+			$("#title-monitoring").html(monitorTitle);
+			$('#modal-query').modal('hide');
+			$("#btn-stop-monitor").removeClass("hidden");
+			$("#btn-add-new-monitor").addClass("hidden");
+			
+			if(!supportsWebsocket)
+				interval = window.setInterval( this.update , refreshTime * 1000);
+			else
+				scope.onmessageHandler = resultArea.updateResultArea;
+		}else{
+			this.addErrorMessage( $("#form-monitor-query-messages")[0] , data.message );
+		}
 	};
 	
 	this.stopMonitor = function( eve ){
@@ -143,7 +162,6 @@ var Monitor = function(){
 				}
 			},
 			error :  function(jqXHR, status, errorThrown) {
-//				scope.manageException ( jqXHR , status , errorThrown );
 				resultArea.addErrorMessage( "Well that was unexpected " + errorThrown );
 				scope.stopInterval();
 			}
@@ -193,6 +211,50 @@ var Monitor = function(){
 		}
 	};
 	
+	(function(){
+		if ('MozWebSocket' in window || 'WebSocket' in window ) {
+			supportsWebsocket = true;
+		} else {
+			supportsWebsocket = false;
+			return;
+		}
+		
+		scope.initializeWebsocket = function(host){
+			if ('WebSocket' in window) {
+				scope.socket = new WebSocket(host);
+			} else if( 'MozWebSocket' in window ){
+				scope.socket = new MozWebSocket(host);
+			}
+			
+			scope.socket.onopen = function() {
+				console.log('Info: WebSocket connection opened.');
+			};
+
+			scope.socket.onclose = function() {
+				console.log('Info: WebSocket closed.');
+			};
+
+			scope.socket.onmessage = function(message) {
+				scope.onmessageHandler( JSON.parse( message.data ) );
+			};
+			
+			scope.sendMessage =function(data) {
+				this.socket.send(data);
+			};
+			
+			scope.onmessageHandler = function( data ){};
+		};
+		
+		if (window.location.protocol == 'http:') {
+			scope.initializeWebsocket('ws://' + window.location.host
+					+ '/dbmonitoring/webs/monitor');
+		} else {
+			scope.initializeWebsocket('wss://' + window.location.host
+					+ '/dbmonitoring/webs/monitor');
+		}
+		
+	}());
+	
 };
 
 var ResultArea = function(resultArea){
@@ -205,6 +267,7 @@ var ResultArea = function(resultArea){
 	};
 	
 	this.updateResultArea = function(json){
+		
 		$(this.resultArea).empty();
 		var rows = json.data.rows;
 		$("#dataAtualizacao").text(json.dataAtualizacao);
@@ -230,12 +293,17 @@ var ResultArea = function(resultArea){
 				arr.push("</tr>");
 			}
 			arr.push('</table>');
-			$(this.resultArea).append( arr.join("") );
+			var string =  arr.join("");
+			console.log(" UPDATE   " , string);
+			$("#result").html( string );
 		}else{
 			this.addErrorMessage("Empty result");
 		}
 	};
 	
+	/**
+	 * Verify the sizeof the screen and update the result area to match it
+	 */
 	this.resizeTheResultArea = function() {
 		var titleHeight = $("#row-title").height();
 		var marginBottom = 10;
@@ -243,27 +311,17 @@ var ResultArea = function(resultArea){
 		$("#row-query").height(availableHeight - (titleHeight + marginBottom));
 	};
 	
+	this.resizeTheResultArea();
 };
 
 $(document).ready(function() {
 	
-	/**
-	 * Verify the sizeof the screen and update the result area to match it
-	 */
-	function resizeTheResultArea() {
-		var titleHeight = $("#row-title").height();
-		var marginBottom = 10;
-		var availableHeight = $(document).height();
-		$("#row-query").height(availableHeight - (titleHeight + marginBottom));
-	}
-	
-	$(window).resize( resizeTheResultArea );
-	resizeTheResultArea();
-	
-	var monitor = new Monitor();
+	var resultArea = new ResultArea($("#result")[0]);
+	$(window).resize( resultArea.resizeTheResultArea );
+	var monitor = new Monitor( resultArea );
 	
 	$("#btnOpenConnection").click(function(e){
-				monitor.createConnection(e);
+		monitor.createConnection(e);
 	});
 	
 	$("#btnInitiateMonitor").click(function(e){

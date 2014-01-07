@@ -15,7 +15,9 @@ import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 import com.efraimgentil.dbmonitoring.models.MonitorResponse;
 import com.efraimgentil.dbmonitoring.models.exceptions.NoMonitorTokenException;
 import com.efraimgentil.dbmonitoring.models.exceptions.WrongTokenFormatException;
+import com.efraimgentil.dbmonitoring.threads.MonitorThread;
 import com.efraimgentil.dbmonitoring.utils.StringUtils;
+import com.efraimgentil.dbmonitoring.websocket.WSPool;
 
 /**
  * 
@@ -28,7 +30,6 @@ public class MonitorService {
 	private static final String UPDATE = "UPDATE";
 	private static final String OPEN_CONNECTION = "OPEN_CONNECTION";
 
-	private static HashMap<String, MonitorInfo> monitors = new HashMap<>();
 	private StringUtils stringUtils;
 	private MonitorInfoPoolService monitorInfoPoolService;
 	private ConnectionPool connectionPool;
@@ -42,7 +43,7 @@ public class MonitorService {
 		case INITIATE:
 			return initiateMonitor(monitorInfo);
 		case UPDATE:
-			return processQuery( monitorInfo.getToken());
+			return updateMonitor( monitorInfo.getToken());
 		default:
 			return new MonitorResponse(false, "This is not a valid action",
 					null);
@@ -76,12 +77,18 @@ public class MonitorService {
 					monitorInfo.getConnectionToken());
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(monitorInfo.getQuery());
-			getMonitorInfoPoolService().updateMappedMonitorInfo(monitorInfo);
+			monitorInfo = getMonitorInfoPoolService().updateMappedMonitorInfo(monitorInfo);
+			
 			Map<String, Object> data = new HashMap<String, Object>();
 			data.put("token", monitorInfo.getToken());
 			MonitorResponse monitorResponse = new MonitorResponse(true,
 					"Monitor successfully initiated", data);
 			monitorResponse.createRows(rs);
+			
+			if( monitorInfo.getSession() != null ){
+				initiateMonitorThread(monitorInfo);
+			}
+			
 			return monitorResponse;
 		} catch (SQLException e) {
 			return new MonitorResponse(false,
@@ -92,7 +99,7 @@ public class MonitorService {
 		}
 	}
 
-	public MonitorResponse processQuery(String token) {
+	public MonitorResponse updateMonitor(String token) {
 		try {
 			MonitorInfo monitorInfo = getMonitorInfoPoolService().getMonitor(
 					token);
@@ -132,6 +139,12 @@ public class MonitorService {
 		else
 			return new MonitorResponse(false, "Unexpected error. Error: "
 					+ e.getMessage(), null);
+	}
+	
+	public void initiateMonitorThread(MonitorInfo monitorInfo){
+		System.out.println(" Initiating Monitor ");
+		WSPool.getInstance().addClient(monitorInfo);
+		new Thread( new MonitorThread( monitorInfo.getToken() ) ).start(); 
 	}
 
 	public StringUtils getStringUtils() {

@@ -2,6 +2,8 @@ package com.efraimgentil.dbmonitoring.models;
 
 import java.util.Calendar;
 
+import javax.websocket.Session;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -61,6 +63,9 @@ public class MonitorInfo {
 	//See get and set
 	@JsonProperty("action")
 	private String action;
+	
+	@JsonIgnore
+	private Session session;
 	
 	public MonitorInfo() {	}
 	
@@ -179,6 +184,14 @@ public class MonitorInfo {
 
 	public void setAction(String action) {
 		this.action = action;
+	}
+
+	public Session getSession() {
+		return session;
+	}
+
+	public void setSession(Session session) {
+		this.session = session;
 	}
 	
 }

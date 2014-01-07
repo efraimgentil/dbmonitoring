@@ -40,6 +40,7 @@ public class WSMonitor {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			monitorInfo = mapper.reader(MonitorInfo.class).readValue( message  );
+			monitorInfo.setSession(session);
 			MonitorResponse monitorResponse = new MonitorService().execute( monitorInfo );
 			return mapper.writeValueAsString( monitorResponse );
 		} catch (JsonProcessingException e) {

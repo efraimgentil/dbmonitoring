@@ -1,23 +1,21 @@
 package com.efraimgentil.dbmonitoring.websocket;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.websocket.Session;
+
+import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 
 public class WSPool {
 	
+	private Map< String , List<Session> > clients;
 	private static WSPool instance;
-	private Map<Integer, WSMonitor> pool;
-	private AtomicInteger atomicInteger;
 	
-	private WSPool() {
-		pool = new HashMap<Integer, WSMonitor>();
-		atomicInteger = new AtomicInteger(0);
+	private WSPool(){
+		clients = new ConcurrentHashMap<>();
 	}
 	
 	public static WSPool getInstance(){
@@ -27,23 +25,28 @@ public class WSPool {
 		return instance;
 	}
 	
-	public void add(WSMonitor wsMonitor){
-		wsMonitor.setId( atomicInteger.incrementAndGet() );
-		pool.put( wsMonitor.getId() , wsMonitor );
+	public void addClient( MonitorInfo monitorInfo ){
+	   if( clients.containsKey( monitorInfo.getToken() ) ){
+		   List<Session> sessions = clients.get( monitorInfo.getToken() );
+		   sessions.add( monitorInfo.getSession() );
+	   }else{
+		   clients.put( monitorInfo.getToken() , Arrays.asList( monitorInfo.getSession() ) );
+	   }
 	}
 	
-	public WSMonitor get(Integer id){
-		return pool.get(id);
+	public void removeClient(MonitorInfo monitorInfo){
+		List<Session> sessions = clients.get( monitorInfo.getToken() );
+		sessions.remove( monitorInfo.getSession() );
+		if(sessions.size() == 0)
+			clients.remove( monitorInfo.getToken() );
 	}
 	
-	public void remove(Integer id){
-		pool.remove(id);
+	public List<Session> getSessions(String monitorToken){
+		return clients.get(monitorToken);
 	}
 	
-	public List<WSMonitor> getAll(){
-		List<WSMonitor> monitors = new ArrayList<WSMonitor>();
-		monitors.addAll(pool.values());
-		return monitors;
+	public boolean hasSessions( String monitorToken ){
+		return clients.containsKey( monitorToken ) && !clients.get(monitorToken).isEmpty();
 	}
 	
 }
