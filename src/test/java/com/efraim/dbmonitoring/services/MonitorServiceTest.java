@@ -83,18 +83,20 @@ public class MonitorServiceTest {
 	
 	
 	@Test(description = "Shoul initiate the monitor using with base the MonitorInfo passed" , groups = { "success" , "initiateMonitor"  } )
-	public void shouldInitiateTeMonitor() throws ConnectionNotFound, SQLException{
+	public void shouldInitiateTeMonitor() throws ConnectionNotFound, SQLException, NoMonitorTokenException, WrongTokenFormatException{
 		Connection connection = mock(Connection.class);
 		PreparedStatement stmt = mock(PreparedStatement.class);
 		ResultSet resultSet = mock(ResultSet.class) ;
 		ResultSetMetaData resultSetMetaData = mock(ResultSetMetaData.class);
+		MonitorInfoPoolService monitorInfoPoolService = mock(MonitorInfoPoolService.class);
 		
-		when ( connectionPool.getConnection( anyString() ) ).thenReturn( connection );
+		when( connectionPool.getConnection( anyString() ) ).thenReturn( connection );
 		when( connection.createStatement() ).thenReturn(stmt);
 		when( stmt.executeQuery( anyString() ) ).thenReturn( resultSet );
+		when( monitorInfoPoolService.updateMappedMonitorInfo( any(MonitorInfo.class)) ).thenReturn( monitorInfo );
 		when( resultSet.getMetaData() ).thenReturn( resultSetMetaData );
-//		when( resultSetMetaData.getColumnCount() ).thenReturn( 10 );
 		when( resultSet.next() ).thenReturn(false);
+		monitorService.setMonitorInfoPoolService(monitorInfoPoolService);
 		
 		MonitorResponse monitorResponse = monitorService.initiateMonitor(monitorInfo);
 		
