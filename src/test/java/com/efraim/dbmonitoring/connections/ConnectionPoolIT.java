@@ -40,14 +40,15 @@ public class ConnectionPoolIT {
 
 	@Test(description = "Should successfully open a H2 connection and return a token", groups = { "success" })
 	public void shouldSuccessfullyOpenConnection() throws ClassNotFoundException, SQLException {
-		String token = connectionPool.openConnection(monitorInfo);
-		assertNotNull(token);
+		monitorInfo = connectionPool.openConnection(monitorInfo);
+		assertNotNull( monitorInfo.getConnectionToken() );
+		assertSame( 32 , monitorInfo.getConnectionToken().length() );
 	}
 	
 	@Test(description = "Should retrieve the connection in the passed token" , groups = { "success" })
 	public void shouldRetriveTheConnection() throws ClassNotFoundException, SQLException, ConnectionNotFound{
-		String token = connectionPool.openConnection(monitorInfo);
-		Connection connection = connectionPool.getConnection(token);
+		monitorInfo = connectionPool.openConnection(monitorInfo);
+		Connection connection = connectionPool.getConnection( monitorInfo.getConnectionToken() );
 		assertNotNull(connection);
 		assertSame( true , !connection.isClosed() );
 	}

@@ -1,6 +1,7 @@
 package com.efraimgentil.dbmonitoring.models;
 
 import java.util.Calendar;
+import java.util.Date;
 
 import javax.websocket.Session;
 
@@ -15,60 +16,65 @@ import com.efraimgentil.dbmonitoring.jackson.AvailableDatabaseDeserializer;
 import com.efraimgentil.dbmonitoring.jackson.AvailableDatabaseSerializer;
 import com.efraimgentil.dbmonitoring.models.exceptions.NoMonitorTokenException;
 import com.efraimgentil.dbmonitoring.models.exceptions.WrongTokenFormatException;
+import com.efraimgentil.dbmonitoring.utils.StringUtils;
 
 /**
  * 
  * @author Efraim Gentil
  * @email efraim.gentil@gmail.com
  * @date Dec 13, 2013
- *
+ * 
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MonitorInfo {
-	
+
 	@JsonIgnore
 	private static final int CONNECTION_TOKEN = 0;
 	@JsonIgnore
 	private static final int MONITOR_TOKEN = 1;
-	
+
 	@JsonProperty("database")
-	@JsonSerialize( using = AvailableDatabaseSerializer.class  )
-	@JsonDeserialize( using= AvailableDatabaseDeserializer.class )
+	@JsonSerialize(using = AvailableDatabaseSerializer.class)
+	@JsonDeserialize(using = AvailableDatabaseDeserializer.class)
 	private AvailableDatabase database;
-	
+
 	@JsonProperty("host")
 	private String host;
 
 	@JsonProperty("user")
 	private String user;
-	
+
 	@JsonProperty("password")
 	private String password;
-	
+
 	@JsonProperty("monitorTitle")
 	private String monitorTitle;
-	
+
 	@JsonProperty("query")
 	private String query;
-	
+
 	@JsonProperty("refreshTime")
 	private Integer refreshTime;
-	
+
 	@JsonProperty("token")
 	private String token;
-	
+
+	@JsonIgnore
+	private String connectionToken;
+
 	@JsonIgnore
 	private Calendar lastAccess;
-	
-	//See get and set
+
+	// See get and set
 	@JsonProperty("action")
 	private String action;
-	
+
 	@JsonIgnore
 	private Session session;
-	
-	public MonitorInfo() {	}
-	
+
+	public MonitorInfo() {
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -83,37 +89,34 @@ public class MonitorInfo {
 		return builder.toString();
 	}
 
-	protected String verifyAndReturnTokenPart(int part) throws NoMonitorTokenException, WrongTokenFormatException{
-		if(token == null)
+	protected String verifyAndReturnTokenPart(int part)
+			throws NoMonitorTokenException, WrongTokenFormatException {
+		if (token == null)
 			throw new NoMonitorTokenException();
 		String[] parts = token.split("-");
-		if(parts.length <= 1)
+		if (parts.length <= 1)
 			throw new WrongTokenFormatException();
 		return parts[part];
 	}
-	
+
 	@JsonIgnore
-	public String getConnectionToken() throws NoMonitorTokenException, WrongTokenFormatException{
-		return verifyAndReturnTokenPart( CONNECTION_TOKEN );
+	public String getMonitorToken() throws NoMonitorTokenException,
+			WrongTokenFormatException {
+		return verifyAndReturnTokenPart(MONITOR_TOKEN);
 	}
-	
+
 	@JsonIgnore
-	public String getMonitorToken() throws NoMonitorTokenException, WrongTokenFormatException{
-		return verifyAndReturnTokenPart( MONITOR_TOKEN );
+	public void setMonitorToken(String token) throws NoMonitorTokenException,
+			WrongTokenFormatException {
+		String connectionToken = verifyAndReturnTokenPart(CONNECTION_TOKEN);
+		setToken(connectionToken + "-" + token);
 	}
-	
+
 	@JsonIgnore
-	public void setConnectionToken( String token ) throws NoMonitorTokenException, WrongTokenFormatException{
-		String monitorToken= verifyAndReturnTokenPart( MONITOR_TOKEN );
-		setToken( token + "-" +  monitorToken);
+	public void generateToken() {
+		token = new StringUtils().md5(new Date().toString());
 	}
-	
-	@JsonIgnore
-	public void setMonitorToken( String token ) throws NoMonitorTokenException, WrongTokenFormatException{
-		String connectionToken =  verifyAndReturnTokenPart( CONNECTION_TOKEN );
-		setToken( connectionToken + "-" +  token);
-	}
-	
+
 	public AvailableDatabase getDatabase() {
 		return database;
 	}
@@ -177,7 +180,7 @@ public class MonitorInfo {
 	public void setToken(String token) {
 		this.token = token;
 	}
-	
+
 	public String getAction() {
 		return action;
 	}
@@ -193,5 +196,13 @@ public class MonitorInfo {
 	public void setSession(Session session) {
 		this.session = session;
 	}
-	
+
+	public String getConnectionToken() {
+		return connectionToken;
+	}
+
+	public void setConnectionToken(String connectionToken) {
+		this.connectionToken = connectionToken;
+	}
+
 }

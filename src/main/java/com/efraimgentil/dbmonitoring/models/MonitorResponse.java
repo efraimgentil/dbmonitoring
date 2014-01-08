@@ -34,6 +34,7 @@ public class MonitorResponse {
 		super();
 		this.success = success;
 		this.message = message;
+		this.data = null;
 	}
 	
 	public MonitorResponse(Boolean success, String message, Map<String, Object> data) {

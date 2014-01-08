@@ -58,8 +58,12 @@ public class MonitorServiceTest {
 	
 	@Test(description = "Should receive a MonitorInfo and open a connection with success" , groups = {"success"})
 	public void shouldOpenAConnection() throws ClassNotFoundException, SQLException{
-		when( connectionPool.openConnection( any(MonitorInfo.class) ) ).thenReturn("anytokenhehe");
+		when( connectionPool.openConnection( any(MonitorInfo.class) ) ).thenReturn( monitorInfo );
+		doCallRealMethod().when( monitorInfo ).generateToken();
+		doCallRealMethod().when( monitorInfo ).getToken();
+		
 		MonitorResponse monitorResponse = monitorService.openConnection( monitorInfo );
+		
 		assertTrue( monitorResponse.getSuccess() );
 		assertNotNull( monitorResponse.getMessage() );
 		assertNotNull( monitorResponse.getData().get("token") );
