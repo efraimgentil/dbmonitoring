@@ -25,6 +25,7 @@ import com.efraimgentil.dbmonitoring.models.exceptions.NoMonitorTokenException;
 import com.efraimgentil.dbmonitoring.models.exceptions.WrongTokenFormatException;
 import com.efraimgentil.dbmonitoring.services.MonitorInfoPoolService;
 import com.efraimgentil.dbmonitoring.services.MonitorService;
+import com.efraimgentil.dbmonitoring.services.QueryService;
 
 @Test
 public class MonitorServiceTest {
@@ -88,15 +89,13 @@ public class MonitorServiceTest {
 	
 	@Test(description = "Shoul initiate the monitor using with base the MonitorInfo passed" , groups = { "success" , "initiateMonitor"  } )
 	public void shouldInitiateTeMonitor() throws ConnectionNotFound, SQLException, NoMonitorTokenException, WrongTokenFormatException{
-		Connection connection = mock(Connection.class);
-		PreparedStatement stmt = mock(PreparedStatement.class);
+		QueryService queryService = mock(QueryService.class);
+		monitorService.setQueryService(queryService);
 		ResultSet resultSet = mock(ResultSet.class) ;
 		ResultSetMetaData resultSetMetaData = mock(ResultSetMetaData.class);
 		MonitorInfoPoolService monitorInfoPoolService = mock(MonitorInfoPoolService.class);
 		
-		when( connectionPool.getConnection( anyString() ) ).thenReturn( connection );
-		when( connection.createStatement() ).thenReturn(stmt);
-		when( stmt.executeQuery( anyString() ) ).thenReturn( resultSet );
+		when( queryService.executeQuery( any(MonitorInfo.class) ) ).thenReturn( resultSet );
 		when( monitorInfoPoolService.updateMappedMonitorInfo( any(MonitorInfo.class)) ).thenReturn( monitorInfo );
 		when( resultSet.getMetaData() ).thenReturn( resultSetMetaData );
 		when( resultSet.next() ).thenReturn(false);
@@ -119,7 +118,7 @@ public class MonitorServiceTest {
 		
 		MonitorResponse monitorResponse = monitorService.initiateMonitor(monitorInfo);
 		
-		assertFalse( monitorResponse.getSuccess() );
+		assertFalse  ( monitorResponse.getSuccess() );
 		assertNotNull( monitorResponse.getMessage() );
 	}
 	

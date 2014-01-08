@@ -33,6 +33,11 @@ public class MonitorService {
 	private StringUtils stringUtils;
 	private MonitorInfoPoolService monitorInfoPoolService;
 	private ConnectionPool connectionPool;
+	private QueryService queryService;
+	
+	public MonitorService() {
+		setQueryService(new QueryService());
+	}
 
 	public MonitorResponse execute(MonitorInfo monitorInfo) {
 		String action = monitorInfo.getAction() != null ? monitorInfo
@@ -73,10 +78,7 @@ public class MonitorService {
 
 	public MonitorResponse initiateMonitor(MonitorInfo monitorInfo) {
 		try {
-			Connection conn = getConnectionPool().getConnection(
-					monitorInfo.getConnectionToken());
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(monitorInfo.getQuery());
+			ResultSet rs = getQueryService().executeQuery(monitorInfo);
 			monitorInfo = getMonitorInfoPoolService().updateMappedMonitorInfo(
 					monitorInfo);
 
@@ -104,12 +106,9 @@ public class MonitorService {
 		try {
 			MonitorInfo monitorInfo = getMonitorInfoPoolService().getMonitor(
 					token);
-			Connection conn = ConnectionPool.getInstance().getConnection(
-					monitorInfo.getConnectionToken());
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(monitorInfo.getQuery());
-			SimpleDateFormat sdf = new SimpleDateFormat(
-					"dd/MM/yyyy as HH:mm:ss");
+			ResultSet rs = getQueryService().executeQuery(monitorInfo);
+			
+			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy as HH:mm:ss");
 			MonitorResponse monitorResponse = new MonitorResponse(true, null,
 					new HashMap<String, Object>());
 			monitorResponse.getData().put("updateDate", sdf.format(new Date()));
@@ -175,6 +174,14 @@ public class MonitorService {
 	public void setMonitorInfoPoolService(
 			MonitorInfoPoolService monitorInfoPoolService) {
 		this.monitorInfoPoolService = monitorInfoPoolService;
+	}
+
+	public QueryService getQueryService() {
+		return queryService;
+	}
+
+	public void setQueryService(QueryService queryService) {
+		this.queryService = queryService;
 	}
 
 }
