@@ -73,45 +73,56 @@ public class MonitorResponse {
 	
 	public void createRows(ResultSet resultSet) throws SQLException{
 		List< Map<String, Object> > rows = new ArrayList<>(); 
-		ResultSetMetaData rsmd = resultSet.getMetaData();
-		int columnCount = rsmd.getColumnCount();
+		List<String> columnLabels = getColumnLabels( resultSet.getMetaData() );
+		
 		Map<String, Object> row;
-		String columnLabel;
 		Object columnValue;
 		while( resultSet.next() ){
 			row = new HashMap<String, Object>();
-			for(int index = 1; index <= columnCount ; index++){
-				columnLabel = rsmd.getColumnLabel(index);
-				columnValue = resultSet.getObject(index);
-				if (columnValue == null) {
-					row.put(columnLabel , null);
-	            } else if (columnValue instanceof Integer) {
-	            	row.put(columnLabel, (Integer) columnValue);
-	            } else if (columnValue instanceof String) {
-	                row.put(columnLabel, (String) columnValue);                
-	            } else if (columnValue instanceof Boolean) {
-	                row.put(columnLabel, (Boolean) columnValue);           
-	            } else if (columnValue instanceof Date) {
-	                row.put(columnLabel, ((Date) columnValue) );                
-	            } else if (columnValue instanceof Long) {
-	                row.put(columnLabel, (Long) columnValue);                
-	            } else if (columnValue instanceof Double) {
-	                row.put(columnLabel, (Double) columnValue);                
-	            } else if (columnValue instanceof Float) {
-	                row.put(columnLabel, (Float) columnValue);                
-	            } else if (columnValue instanceof BigDecimal) {
-	                row.put(columnLabel, (BigDecimal) columnValue);
-	            } else if (columnValue instanceof Byte) {
-	                row.put(columnLabel, (Byte) columnValue);
-	            } else if (columnValue instanceof byte[]) {
-	                row.put(columnLabel, (byte[]) columnValue);                
-	            } else {
-	                throw new IllegalArgumentException("Unmappable object type: " + columnValue.getClass());
-	            }	
+			for (String columnLabel : columnLabels) {
+				columnValue = resultSet.getObject(columnLabel);
+				row.put( columnLabel , getColumnWrapedValue(columnValue) );
 			}
 			rows.add(row);
 		}
+		
 		getData().put("rows", rows);
+	}
+	
+	protected List<String> getColumnLabels( ResultSetMetaData rsMetaData ) throws SQLException{
+		List<String> colummLabels = new ArrayList<>();
+		for( int index = 1 , columnCount = rsMetaData.getColumnCount() ; index <= columnCount ; index++ ){
+			colummLabels.add( rsMetaData.getColumnLabel( index ) );
+		}
+		return colummLabels;
+	}
+	
+	protected Object getColumnWrapedValue ( Object columnValue ){
+		if (columnValue == null) {
+			return null;
+        } else if (columnValue instanceof Integer) {
+			return (Integer) columnValue;
+        } else if (columnValue instanceof String) {
+            return (String) columnValue;                
+        } else if (columnValue instanceof Boolean) {
+            return (Boolean) columnValue;           
+        } else if (columnValue instanceof Date) {
+            return ((Date) columnValue) ;                
+        } else if (columnValue instanceof Long) {
+            return (Long) columnValue;                
+        } else if (columnValue instanceof Double) {
+            return (Double) columnValue;                
+        } else if (columnValue instanceof Float) {
+            return (Float) columnValue;                
+        } else if (columnValue instanceof BigDecimal) {
+            return (BigDecimal) columnValue;
+        } else if (columnValue instanceof Byte) {
+            return (Byte) columnValue;
+        } else if (columnValue instanceof byte[]) {
+            return (byte[]) columnValue;                
+        } else {
+            throw new IllegalArgumentException("Unmappable object type: " + columnValue.getClass());
+        }	
 	}
 	
 }

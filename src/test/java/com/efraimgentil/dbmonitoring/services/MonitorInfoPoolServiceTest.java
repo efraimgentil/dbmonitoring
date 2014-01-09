@@ -1,4 +1,4 @@
-package com.efraim.dbmonitoring.services;
+package com.efraimgentil.dbmonitoring.services;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

@@ -108,10 +108,11 @@ public class MonitorService {
 					token);
 			ResultSet rs = getQueryService().executeQuery(monitorInfo);
 			
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy as HH:mm:ss");
-			MonitorResponse monitorResponse = new MonitorResponse(true, null,
-					new HashMap<String, Object>());
-			monitorResponse.getData().put("updateDate", sdf.format(new Date()));
+			Map<String, Object> data = new HashMap<>();
+			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+			data.put("lastUpdateDate", sdf.format(new Date()));
+			
+			MonitorResponse monitorResponse = new MonitorResponse(true, null, data);
 			monitorResponse.createRows(rs);
 			return monitorResponse;
 		} catch (SQLException e) {

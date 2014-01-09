@@ -1,4 +1,4 @@
-package com.efraim.dbmonitoring.connections;
+package com.efraimgentil.dbmonitoring.connections;
 
 import static org.testng.AssertJUnit.assertNotNull;
 import static org.testng.AssertJUnit.assertSame;
