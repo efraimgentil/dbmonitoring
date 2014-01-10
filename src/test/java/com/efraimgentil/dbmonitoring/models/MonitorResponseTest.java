@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeGroups;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.efraimgentil.dbmonitoring.models.MonitorResponse;
@@ -29,8 +30,8 @@ public class MonitorResponseTest {
 	@Mock
 	private ResultSetMetaData resultSetMetaData;
 	
-	@BeforeClass
-	public void setupClass(){
+	@BeforeTest
+	public void setupTest(){
 		MockitoAnnotations.initMocks(this);
 	}
 	
@@ -76,6 +77,50 @@ public class MonitorResponseTest {
 		assertTrue( columnLabels.contains("label1") );
 		assertTrue( columnLabels.contains("label2") );
 		assertTrue( columnLabels.contains("label3") );
+	}
+	
+	@Test( description = "Given a ResultSetMetaData should return a list of columnLabels of this ResultSetMetaData" , groups = { "success" } )
+	public void givenAColumnValueShouldReturnTheValue(){
+		Object object = new Integer( 10 );
+		
+		Object wrapedValue = monitorResponse.getColumnWrapedValue(object);
+		
+		assertNotNull(object);
+	}
+	
+	@Test( description = "Given a ResultSetMetaData should return a list of columnLabels of this ResultSetMetaData" ,
+			groups = { "failure" } , expectedExceptions = { IllegalArgumentException.class } )
+	public void givenAColumnValueWithUnmappedTypeShouldThrowIllegalArgumentException(){
+		Object object = new Object();
+		
+		Object wrapedValue = monitorResponse.getColumnWrapedValue(object);
+	}
+	
+	@Test( description = "Given a column value with a valid type should return true" , groups = { "success" } )
+	public void givenAColumnValueShoudValidateIfIsAValidType(){
+		Object columnValue = new Integer(10);
+		
+		Boolean isValid = monitorResponse.isValidValue(columnValue);
+		
+		assertTrue( isValid );
+	}
+	
+	@Test( description = "Given a null column value should return true" , groups = { "success" } )
+	public void givenANullColumnValueShoudValidateIfIsAValidType(){
+		Object columnValue = null;
+		
+		Boolean isValid = monitorResponse.isValidValue(columnValue);
+		
+		assertTrue( isValid );
+	}
+	
+	@Test( description = "Given a column value with a invalid type should return false" , groups = { "failure" } )
+	public void givenAColumnValueWithInvalidTypeShouldReturnFalse(){
+		Object columnValue = new Object();
+		
+		Boolean isValid = monitorResponse.isValidValue(columnValue);
+		
+		assertFalse( isValid );
 	}
 	
 }

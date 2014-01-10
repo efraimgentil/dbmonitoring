@@ -30,13 +30,14 @@ public class MonitorService {
 	private static final String UPDATE = "UPDATE";
 	private static final String OPEN_CONNECTION = "OPEN_CONNECTION";
 
-	private StringUtils stringUtils;
 	private MonitorInfoPoolService monitorInfoPoolService;
 	private ConnectionPool connectionPool;
 	private QueryService queryService;
+	private ResponseService responseService;
 	
 	public MonitorService() {
-		setQueryService(new QueryService());
+		queryService =  new QueryService();
+		responseService =  new ResponseService();
 	}
 
 	public MonitorResponse execute(MonitorInfo monitorInfo) {
@@ -63,40 +64,33 @@ public class MonitorService {
 
 			Map<String, Object> data = new HashMap<>();
 			data.put("token", monitorInfo.getToken() );
-			return new MonitorResponse(true,
-					"Connection was open with success", data);
+			return responseService.createSuccessResponse( "Connection was open with success" , data);
 		} catch (ClassNotFoundException e) {
-			return new MonitorResponse(false,
-					"Was not possible to find the connection driver");
+			return responseService.createFailureResponse( "Was not possible to find the connection driver" );
 		} catch (SQLException e) {
-			return new MonitorResponse(
-					false,
-					"Was not possible to open the connection, verify the connection information. Error: "
-							+ e.getMessage());
+			return responseService.createFailureResponse("Was not possible to open the connection, verify the connection information. Error: "
+					+ e.getMessage());
 		}
 	}
 
 	public MonitorResponse initiateMonitor(MonitorInfo monitorInfo) {
 		try {
-			ResultSet rs = getQueryService().executeQuery(monitorInfo);
+			ResultSet resultSet = getQueryService().executeQuery(monitorInfo);
 			monitorInfo = getMonitorInfoPoolService().updateMappedMonitorInfo(
 					monitorInfo);
 
 			Map<String, Object> data = new HashMap<String, Object>();
 			data.put("token", monitorInfo.getToken());
-			MonitorResponse monitorResponse = new MonitorResponse(true,
-					"Monitor successfully initiated", data);
-			monitorResponse.createRows(rs);
-
+			MonitorResponse monitorResponse = responseService.createSuccessResponse( "Monitor successfully initiated" , data, resultSet );
+			
 			if (monitorInfo.getSession() != null) {
 				initiateMonitorThread(monitorInfo);
 			}
 
 			return monitorResponse;
 		} catch (SQLException e) {
-			return new MonitorResponse(false,
-					"Was not possible to initiate the monitor. Error: "
-							+ e.getMessage());
+			return responseService.createFailureResponse( "Was not possible to initiate the monitor. Error: "
+					+ e.getMessage() );
 		} catch (Exception e) {
 			return dealWithException(e);
 		}
@@ -106,54 +100,39 @@ public class MonitorService {
 		try {
 			MonitorInfo monitorInfo = getMonitorInfoPoolService().getMonitor(
 					token);
-			ResultSet rs = getQueryService().executeQuery(monitorInfo);
+			ResultSet resultSet = getQueryService().executeQuery(monitorInfo);
 			
 			Map<String, Object> data = new HashMap<>();
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 			data.put("lastUpdateDate", sdf.format(new Date()));
 			
-			MonitorResponse monitorResponse = new MonitorResponse(true, null, data);
-			monitorResponse.createRows(rs);
-			return monitorResponse;
+			return responseService.createSuccessResponse( data , resultSet);
 		} catch (SQLException e) {
-			return new MonitorResponse(false,
-					"Was not possible to execute the query. Error: "
-							+ e.getMessage());
+			return responseService.createFailureResponse( "Was not possible to execute the query. Error: "
+					+ e.getMessage() );
 		} catch (Exception e) {
 			return dealWithException(e);
 		}
 	}
 
 	public MonitorResponse dealWithException(Exception e) {
+		String message = null;
 		if (e instanceof NoMonitorTokenException)
-			return new MonitorResponse(false,
-					"The token for monitor was not found Error:"
-							+ e.getMessage());
+			message = "The token for monitor was not found Error:" + e.getMessage();
 		else if (e instanceof WrongTokenFormatException)
-			return new MonitorResponse(false,
-					"The token has the wrong format. Error: " + e.getMessage());
+			message = "The token has the wrong format. Error: " + e.getMessage();
 		else if (e instanceof ConnectionNotFound)
-			return new MonitorResponse(false,
-					"The connection for this token was not found. Error: "
-							+ e.getMessage());
+			message = "The connection for this token was not found. Error: "+ e.getMessage();
 		else
-			return new MonitorResponse(false, "Unexpected error. Error: "
-					+ e.getMessage());
+			message = "Unexpected error. Error: " + e.getMessage();
+		
+		return responseService.createFailureResponse(message);
 	}
 
 	public void initiateMonitorThread(MonitorInfo monitorInfo) {
 		System.out.println(" Initiating Monitor ");
 		WSPool.getInstance().addClient(monitorInfo);
 		new Thread(new MonitorThread(monitorInfo.getToken())).start();
-	}
-
-	public StringUtils getStringUtils() {
-		return stringUtils == null ? stringUtils = new StringUtils()
-				: stringUtils;
-	}
-
-	public void setStringUtils(StringUtils stringUtils) {
-		this.stringUtils = stringUtils;
 	}
 
 	public ConnectionPool getConnectionPool() {
@@ -183,6 +162,14 @@ public class MonitorService {
 
 	public void setQueryService(QueryService queryService) {
 		this.queryService = queryService;
+	}
+
+	public ResponseService getResponseService() {
+		return responseService;
+	}
+
+	public void setResponseService(ResponseService responseService) {
+		this.responseService = responseService;
 	}
 
 }
