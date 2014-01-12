@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.efraimgentil.dbmonitoring.connections.exceptions.ConnectionNotFound;
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
+import com.efraimgentil.dbmonitoring.models.ConnectionInfo;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 import com.efraimgentil.dbmonitoring.utils.StringUtils;
 
@@ -53,19 +54,19 @@ public class ConnectionPool {
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
-	public MonitorInfo openConnection(MonitorInfo monitorInfo) throws SQLException, ClassNotFoundException {
-		String connectionToken = new StringUtils().md5( monitorInfo.getHost() + monitorInfo.getUser() + monitorInfo.getPassword() );
+	public ConnectionInfo openConnection( ConnectionInfo connectionInfo ) throws SQLException, ClassNotFoundException {
+		String connectionToken = new StringUtils().md5( connectionInfo.getStringForToken() );
 		if (connections.get( connectionToken ) == null) {
-			String user = monitorInfo.getUser();
-			String password = monitorInfo.getPassword();
-			AvailableDatabase availableDatabase = monitorInfo.getDatabase();
+			String user = connectionInfo.getUser();
+			String password = connectionInfo.getPassword();
+			AvailableDatabase availableDatabase = connectionInfo.getDatabase();
 			
 			Class.forName( availableDatabase.getDriver() );
-			String url = availableDatabase.getConnectionUrl() + monitorInfo.getHost();
+			String url = availableDatabase.getConnectionUrl() + connectionInfo.getHost();
 			connections.put( connectionToken , DriverManager.getConnection( url, user, password ) );
 		}
-		monitorInfo.setConnectionToken(connectionToken);
-		return monitorInfo;
+		connectionInfo.setConnectionToken( connectionToken );
+		return connectionInfo;
 	}
 	
 	/**

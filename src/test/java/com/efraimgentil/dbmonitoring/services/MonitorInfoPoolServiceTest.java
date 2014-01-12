@@ -1,5 +1,8 @@
 package com.efraimgentil.dbmonitoring.services;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -39,20 +42,17 @@ public class MonitorInfoPoolServiceTest {
 	
 	@Test( description = "" , groups = { "success" })
 	public void shouldReplaceTheMonitorInfoInTheMapWithThePassedMonitor() throws NoMonitorTokenException, WrongTokenFormatException{
+		String token = "tokenadsasuduashdiaus";
+		String query = "SELECT * FROM Nothing";
 		MonitorInfo monitorInfo = new MonitorInfo();
-		monitorInfo.setToken( "any-Token" );
+		monitorInfo.setToken( token );
 		monitorInfoPoolService.addMonitor( monitorInfo );
 		
-		MonitorInfo monitorInfo2 = new MonitorInfo();
-		monitorInfo2.setToken( "any-Token" );
-		monitorInfo2.setQuery( "SELECT * FROM Nothing" );
+		Map<String, Object> jsonMap = new HashMap<String, Object>();
+		jsonMap.put("query", query);
+		monitorInfo = monitorInfoPoolService.updateMonitorInfoAndGet( token , jsonMap );
 		
-		monitorInfo2 = monitorInfoPoolService.updateMappedMonitorInfo( monitorInfo2 );
-		
-		
-		MonitorInfo monitorInfoFromPool = monitorInfoPoolService.getMonitor( monitorInfo2 .getToken() );
-		
-		assertSame( monitorInfoFromPool.getQuery() ,  monitorInfo2 .getQuery() );
+		assertSame( query ,  monitorInfo .getQuery() );
 	}
 	
 }

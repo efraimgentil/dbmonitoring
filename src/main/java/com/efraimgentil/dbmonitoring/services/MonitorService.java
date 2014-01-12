@@ -1,5 +1,6 @@
 package com.efraimgentil.dbmonitoring.services;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,8 +10,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+
 import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
 import com.efraimgentil.dbmonitoring.connections.exceptions.ConnectionNotFound;
+import com.efraimgentil.dbmonitoring.models.ConnectionInfo;
+import com.efraimgentil.dbmonitoring.models.JsonAction;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 import com.efraimgentil.dbmonitoring.models.MonitorResponse;
 import com.efraimgentil.dbmonitoring.models.exceptions.NoMonitorTokenException;
@@ -26,9 +35,9 @@ import com.efraimgentil.dbmonitoring.websocket.WSPool;
  */
 public class MonitorService {
 
-	private static final String INITIATE = "INITIATE";
-	private static final String UPDATE = "UPDATE";
-	private static final String OPEN_CONNECTION = "OPEN_CONNECTION";
+	public static final String INITIATE = "INITIATE";
+	public static final String UPDATE = "UPDATE";
+	public static final String OPEN_CONNECTION = "OPEN_CONNECTION";
 
 	private MonitorInfoPoolService monitorInfoPoolService;
 	private ConnectionPool connectionPool;
@@ -40,26 +49,26 @@ public class MonitorService {
 		responseService =  new ResponseService();
 	}
 
-	public MonitorResponse execute(MonitorInfo monitorInfo) {
-		String action = monitorInfo.getAction() != null ? monitorInfo
-				.getAction() : "";
+	public MonitorResponse execute(JsonAction jsonAction) {
+		String action = jsonAction.getAction();
 		switch (action.toUpperCase()) {
 		case OPEN_CONNECTION:
-			return openConnection(monitorInfo);
+			return openConnection( jsonAction );
 		case INITIATE:
-			return initiateMonitor(monitorInfo);
+			return initiateMonitor( jsonAction );
 		case UPDATE:
-			return updateMonitor(monitorInfo.getToken());
+			return updateMonitor( jsonAction.getToken() );
 		default:
 			return new MonitorResponse(false, "This is not a valid action");
 		}
 	}
 
-	public MonitorResponse openConnection(MonitorInfo monitorInfo) {
+	public MonitorResponse openConnection(JsonAction jsonAction) {
 		try {
-			monitorInfo = getConnectionPool().openConnection(monitorInfo);
-
-			monitorInfo.generateToken();
+			ConnectionInfo connectionInfo = createConnectionInfo( jsonAction.getJsonDataString() );
+			connectionInfo = getConnectionPool().openConnection( connectionInfo );
+			
+			MonitorInfo monitorInfo = new MonitorInfo( connectionInfo );
 			getMonitorInfoPoolService().addMonitor(monitorInfo);
 
 			Map<String, Object> data = new HashMap<>();
@@ -70,26 +79,34 @@ public class MonitorService {
 		} catch (SQLException e) {
 			return responseService.createFailureResponse("Was not possible to open the connection, verify the connection information. Error: "
 					+ e.getMessage());
+		} catch (Exception e) {
+			return dealWithException(e);
 		}
 	}
+	
+	protected ConnectionInfo createConnectionInfo(String jsonString) throws JsonProcessingException, IOException{
+		ObjectMapper mapper = new ObjectMapper();
+		ConnectionInfo connectionInfo = mapper.reader( ConnectionInfo.class ).readValue(jsonString);
+		return connectionInfo;
+	}
 
-	public MonitorResponse initiateMonitor(MonitorInfo monitorInfo) {
+	public MonitorResponse initiateMonitor(JsonAction jsonAction) {
 		try {
+			String monitorToken = jsonAction.getToken();
+			MonitorInfo monitorInfo = getMonitorInfoPoolService().updateMonitorInfoAndGet( monitorToken , jsonAction.getJsonDataMap() );
 			ResultSet resultSet = getQueryService().executeQuery(monitorInfo);
-			monitorInfo = getMonitorInfoPoolService().updateMappedMonitorInfo(
-					monitorInfo);
 
 			Map<String, Object> data = new HashMap<String, Object>();
-			data.put("token", monitorInfo.getToken());
+			data.put("token", monitorToken );
 			MonitorResponse monitorResponse = responseService.createSuccessResponse( "Monitor successfully initiated" , data, resultSet );
 			
 			if (monitorInfo.getSession() != null) {
-				initiateMonitorThread(monitorInfo);
+				initiateMonitorThread( monitorInfo );
 			}
 
 			return monitorResponse;
 		} catch (SQLException e) {
-			return responseService.createFailureResponse( "Was not possible to initiate the monitor. Error: "
+			return responseService.createFailureResponse( e , "Was not possible to initiate the monitor. Error: "
 					+ e.getMessage() );
 		} catch (Exception e) {
 			return dealWithException(e);
@@ -115,7 +132,7 @@ public class MonitorService {
 		}
 	}
 
-	public MonitorResponse dealWithException(Exception e) {
+	protected MonitorResponse dealWithException(Exception e) {
 		String message = null;
 		if (e instanceof NoMonitorTokenException)
 			message = "The token for monitor was not found Error:" + e.getMessage();
@@ -126,10 +143,10 @@ public class MonitorService {
 		else
 			message = "Unexpected error. Error: " + e.getMessage();
 		
-		return responseService.createFailureResponse(message);
+		return responseService.createFailureResponse( e , message);
 	}
-
-	public void initiateMonitorThread(MonitorInfo monitorInfo) {
+	
+	protected void initiateMonitorThread(MonitorInfo monitorInfo) {
 		System.out.println(" Initiating Monitor ");
 		WSPool.getInstance().addClient(monitorInfo);
 		new Thread(new MonitorThread(monitorInfo.getToken())).start();

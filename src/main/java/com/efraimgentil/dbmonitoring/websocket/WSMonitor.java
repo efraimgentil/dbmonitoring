@@ -14,6 +14,7 @@ import javax.websocket.server.ServerEndpoint;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.efraimgentil.dbmonitoring.models.JsonAction;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 import com.efraimgentil.dbmonitoring.models.MonitorResponse;
 import com.efraimgentil.dbmonitoring.services.MonitorService;
@@ -39,9 +40,11 @@ public class WSMonitor {
 		MonitorInfo monitorInfo ;
 		try {
 			ObjectMapper mapper = new ObjectMapper();
-			monitorInfo = mapper.reader(MonitorInfo.class).readValue( message  );
-			monitorInfo.setSession(session);
-			MonitorResponse monitorResponse = new MonitorService().execute( monitorInfo );
+			JsonAction action = mapper.reader(JsonAction.class).readValue( message  );
+			action.setJsonDataString( message );
+			action.getJsonDataMap().put("session", session );
+//			monitorInfo.setSession(session);
+			MonitorResponse monitorResponse = new MonitorService().execute( action );
 			return mapper.writeValueAsString( monitorResponse );
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();

@@ -11,7 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.ObjectReader;
+import org.codehaus.jackson.node.JsonNodeFactory;
 
+import com.efraimgentil.dbmonitoring.models.JsonAction;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 import com.efraimgentil.dbmonitoring.models.MonitorResponse;
 import com.efraimgentil.dbmonitoring.services.MonitorService;
@@ -34,9 +36,11 @@ public class MonitorServlet extends HttpServlet {
 		OutputStream outputStream = response.getOutputStream();
 		ObjectMapper mapper = new ObjectMapper();
 		MonitorService monitorService = new MonitorService();
-
-		MonitorInfo monitorInf =  mapper.reader(MonitorInfo.class).readValue( request.getParameter("form") );
-		MonitorResponse monitorResponse = monitorService.execute( monitorInf );
+		
+		String jsonString = request.getParameter("form");
+		JsonAction action =  mapper.reader(JsonAction.class).readValue( jsonString );
+		action.setJsonDataString( jsonString );
+		MonitorResponse monitorResponse = monitorService.execute( action );
 		mapper.writeValue(outputStream, monitorResponse);
 	}
 	

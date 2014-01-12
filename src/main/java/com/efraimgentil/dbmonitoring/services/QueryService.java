@@ -14,7 +14,7 @@ public class QueryService {
 	private ConnectionPool connectionPool;
 	
 	public ResultSet executeQuery( MonitorInfo monitorInfo ) throws SQLException, ConnectionNotFound {
-		Connection conn = getConnectionPool().getConnection( monitorInfo.getToken() );
+		Connection conn = getConnectionPool().getConnection( monitorInfo.getConnectionToken() );
 		Statement stmt = conn.createStatement();
 		return stmt.executeQuery( monitorInfo.getQuery() ); 
 	}

@@ -36,6 +36,9 @@ public class MonitorResponse {
 
 	@JsonProperty("data")
 	private Map<String, Object> data;
+	
+	@JsonIgnore
+	private Exception exception;
 
 	public MonitorResponse() {
 	}
@@ -53,6 +56,15 @@ public class MonitorResponse {
 		this.success = success;
 		this.message = message;
 		this.data = data;
+	}
+	
+	public MonitorResponse(Boolean success, String message,
+			Map<String, Object> data , Exception exception) {
+		super();
+		this.success = success;
+		this.message = message;
+		this.data = data;
+		this.exception = exception;
 	}
 
 	public Boolean getSuccess() {
@@ -150,6 +162,14 @@ public class MonitorResponse {
 			throw new IllegalArgumentException("Unmappable object type: "
 					+ columnValue.getClass());
 		}
+	}
+
+	public Exception getException() {
+		return exception;
+	}
+
+	public void setException(Exception exception) {
+		this.exception = exception;
 	}
 
 }

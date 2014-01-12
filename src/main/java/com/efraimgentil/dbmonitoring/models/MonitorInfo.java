@@ -33,22 +33,11 @@ public class MonitorInfo {
 	@JsonIgnore
 	private static final int MONITOR_TOKEN = 1;
 
-	@JsonProperty("database")
-	@JsonSerialize(using = AvailableDatabaseSerializer.class)
-	@JsonDeserialize(using = AvailableDatabaseDeserializer.class)
-	private AvailableDatabase database;
-
-	@JsonProperty("host")
-	private String host;
-
-	@JsonProperty("user")
-	private String user;
-
-	@JsonProperty("password")
-	private String password;
-
 	@JsonProperty("monitorTitle")
 	private String monitorTitle;
+	
+	@JsonProperty("connectionInfo")
+	private ConnectionInfo connectionInfo;
 
 	@JsonProperty("query")
 	private String query;
@@ -74,14 +63,16 @@ public class MonitorInfo {
 
 	public MonitorInfo() {
 	}
+	
+	public MonitorInfo(ConnectionInfo connectionInfo){
+		generateToken();
+		this.connectionInfo = connectionInfo;
+	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("MonitorInfo [database=").append(database)
-				.append(", host=").append(host).append(", user=").append(user)
-				.append(", password=").append(password)
-				.append(", monitorTitle=").append(monitorTitle)
+		builder.append(", monitorTitle=").append(monitorTitle)
 				.append(", query=").append(query).append(", refreshTime=")
 				.append(refreshTime).append(", token=").append(token)
 				.append(", lastAccess=").append(lastAccess).append(", action=")
@@ -115,38 +106,6 @@ public class MonitorInfo {
 	@JsonIgnore
 	public void generateToken() {
 		token = new StringUtils().md5(new Date().toString());
-	}
-
-	public AvailableDatabase getDatabase() {
-		return database;
-	}
-
-	public void setDatabase(AvailableDatabase database) {
-		this.database = database;
-	}
-
-	public String getHost() {
-		return host;
-	}
-
-	public void setHost(String host) {
-		this.host = host;
-	}
-
-	public String getUser() {
-		return user;
-	}
-
-	public void setUser(String user) {
-		this.user = user;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
 	}
 
 	public String getMonitorTitle() {

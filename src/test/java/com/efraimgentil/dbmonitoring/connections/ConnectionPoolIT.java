@@ -13,23 +13,23 @@ import org.testng.annotations.Test;
 import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
 import com.efraimgentil.dbmonitoring.connections.exceptions.ConnectionNotFound;
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
+import com.efraimgentil.dbmonitoring.models.ConnectionInfo;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 
 public class ConnectionPoolIT {
 
 	private ConnectionPool connectionPool;
 
-	private MonitorInfo monitorInfo;
+	private ConnectionInfo connectionInfo;
 
 	@BeforeMethod
 	public void initEachTest() {
 		connectionPool = ConnectionPool.getInstance();
-		monitorInfo = new MonitorInfo();
-		monitorInfo.setDatabase(AvailableDatabase.H2);
-		monitorInfo.setRefreshTime(5);
-		monitorInfo.setHost("data/test_database");
-		monitorInfo.setUser("sa");
-		monitorInfo.setPassword("sa");
+		connectionInfo = new ConnectionInfo();
+		connectionInfo.setDatabase(AvailableDatabase.H2);
+		connectionInfo.setHost("data/test_database");
+		connectionInfo.setUser("sa");
+		connectionInfo.setPassword("sa");
 		
 	}
 
@@ -40,15 +40,15 @@ public class ConnectionPoolIT {
 
 	@Test(description = "Should successfully open a H2 connection and return a token", groups = { "success" })
 	public void shouldSuccessfullyOpenConnection() throws ClassNotFoundException, SQLException {
-		monitorInfo = connectionPool.openConnection(monitorInfo);
-		assertNotNull( monitorInfo.getConnectionToken() );
-		assertSame( 32 , monitorInfo.getConnectionToken().length() );
+		connectionInfo = connectionPool.openConnection(connectionInfo);
+		assertNotNull( connectionInfo.getConnectionToken() );
+		assertSame( 32 , connectionInfo.getConnectionToken().length() );
 	}
 	
 	@Test(description = "Should retrieve the connection in the passed token" , groups = { "success" })
 	public void shouldRetriveTheConnection() throws ClassNotFoundException, SQLException, ConnectionNotFound{
-		monitorInfo = connectionPool.openConnection(monitorInfo);
-		Connection connection = connectionPool.getConnection( monitorInfo.getConnectionToken() );
+		connectionInfo = connectionPool.openConnection(connectionInfo);
+		Connection connection = connectionPool.getConnection( connectionInfo.getConnectionToken() );
 		assertNotNull(connection);
 		assertSame( true , !connection.isClosed() );
 	}
@@ -62,8 +62,8 @@ public class ConnectionPoolIT {
 	@Test(description = "Should try and fail to open a POSTGRES connection", groups = { "failure" }, expectedExceptions = { SQLException.class })
 	public void tryAndFailOpenConnection() throws ClassNotFoundException,
 			SQLException {
-		monitorInfo.setDatabase(AvailableDatabase.POSTGRES);
-		connectionPool.openConnection(monitorInfo);
+		connectionInfo.setDatabase(AvailableDatabase.POSTGRES);
+		connectionPool.openConnection(connectionInfo);
 	}
 
 }

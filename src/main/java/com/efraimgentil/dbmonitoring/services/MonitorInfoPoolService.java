@@ -1,6 +1,7 @@
 package com.efraimgentil.dbmonitoring.services;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 import com.efraimgentil.dbmonitoring.models.exceptions.NoMonitorTokenException;
@@ -36,20 +37,13 @@ public class MonitorInfoPoolService {
 		return  monitors.get( token );
 	}
 	
-	/**
-	 * 
-	 * @param monitorInfo
-	 * @return
-	 * @throws WrongTokenFormatException 
-	 * @throws NoMonitorTokenException 
-	 */
-	public MonitorInfo updateMappedMonitorInfo( MonitorInfo monitorInfo ) throws NoMonitorTokenException, WrongTokenFormatException{
-		MonitorInfo mappedMonitor = monitors.get( monitorInfo.getToken() );
-		mappedMonitor.setQuery( monitorInfo.getQuery() );
-		mappedMonitor.setMonitorTitle( monitorInfo.getMonitorTitle() );
-		mappedMonitor.setRefreshTime( monitorInfo.getRefreshTime() );
-		String monitorToken = getStringUtils().md5( monitorInfo.getQuery() );
-		monitorInfo.setMonitorToken(monitorToken);
+	public MonitorInfo updateMonitorInfoAndGet(String token , Map<String, Object> jsonMap ) throws NoMonitorTokenException, WrongTokenFormatException{
+		MonitorInfo mappedMonitor = monitors.get( token );
+		mappedMonitor.setQuery( (String) jsonMap.get("query") );
+		mappedMonitor.setMonitorTitle( (String) jsonMap.get("monitorTitle") );
+		String stringRefreshTime = (String) jsonMap.get("refreshTime");
+		if(stringRefreshTime  != null)
+			mappedMonitor.setRefreshTime( Integer.parseInt( stringRefreshTime ) );
 		return mappedMonitor;
 	}
 

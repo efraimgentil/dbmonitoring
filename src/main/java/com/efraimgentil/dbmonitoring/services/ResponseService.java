@@ -9,15 +9,19 @@ import com.efraimgentil.dbmonitoring.models.MonitorResponse;
 public class ResponseService {
 	
 	public MonitorResponse createFailureResponse(String message){
-		return createFailureResponse( message , null );
+		return createFailureResponse( null , message );
 	}
 	
-	public MonitorResponse createFailureResponse( Map<String , Object> data){
-		return createFailureResponse( null , data );
+	public MonitorResponse createFailureResponse( Exception exception , String message ){
+		return createFailureResponse( exception , null , message );
 	}
 	
-	public MonitorResponse createFailureResponse(String message , Map<String , Object> data){
-		return new MonitorResponse(false , message, data );
+	public MonitorResponse createFailureResponse( Map<String , Object> data ){
+		return createFailureResponse(null ,  data , null  );
+	}
+	
+	public MonitorResponse createFailureResponse(Exception exception , Map<String , Object> data , String message ){
+		return new MonitorResponse(false , message, data , exception);
 	}
 	
 	public MonitorResponse createSuccessResponse( String message ) throws SQLException{
