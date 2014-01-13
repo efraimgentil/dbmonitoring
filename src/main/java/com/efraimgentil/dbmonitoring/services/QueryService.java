@@ -14,9 +14,15 @@ public class QueryService {
 	private ConnectionPool connectionPool;
 	
 	public ResultSet executeQuery( MonitorInfo monitorInfo ) throws SQLException, ConnectionNotFound {
-		Connection conn = getConnectionPool().getConnection( monitorInfo.getConnectionToken() );
+		Connection conn = getConnectionPool().getConnection( monitorInfo.getConnectionInfo() );
+		setConnectionToReadOnly(conn);
 		Statement stmt = conn.createStatement();
 		return stmt.executeQuery( monitorInfo.getQuery() ); 
+	}
+	
+	protected void setConnectionToReadOnly(Connection connection ) throws SQLException{
+		if(!connection.isReadOnly())
+			connection.setReadOnly(true);
 	}
 
 	public ConnectionPool getConnectionPool() {
@@ -28,5 +34,7 @@ public class QueryService {
 	public void setConnectionPool(ConnectionPool connectionPool) {
 		this.connectionPool = connectionPool;
 	}
+	
+	
 	
 }

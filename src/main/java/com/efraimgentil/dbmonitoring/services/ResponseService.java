@@ -12,14 +12,13 @@ public class ResponseService {
 		return createFailureResponse( null , message );
 	}
 	
-	public MonitorResponse createFailureResponse( Exception exception , String message ){
-		return createFailureResponse( exception , null , message );
-	}
-	
 	public MonitorResponse createFailureResponse( Map<String , Object> data ){
 		return createFailureResponse(null ,  data , null  );
 	}
 	
+	public MonitorResponse createFailureResponse( Exception exception , String message ){
+		return createFailureResponse( exception , null , message );
+	}
 	public MonitorResponse createFailureResponse(Exception exception , Map<String , Object> data , String message ){
 		return new MonitorResponse(false , message, data , exception);
 	}

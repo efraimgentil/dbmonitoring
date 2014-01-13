@@ -42,7 +42,7 @@ public class MonitorInfoPoolService {
 		mappedMonitor.setQuery( (String) jsonMap.get("query") );
 		mappedMonitor.setMonitorTitle( (String) jsonMap.get("monitorTitle") );
 		String stringRefreshTime = (String) jsonMap.get("refreshTime");
-		if(stringRefreshTime  != null)
+		if(stringRefreshTime  != null && !stringRefreshTime.isEmpty())
 			mappedMonitor.setRefreshTime( Integer.parseInt( stringRefreshTime ) );
 		return mappedMonitor;
 	}

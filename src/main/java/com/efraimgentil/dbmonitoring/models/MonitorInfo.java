@@ -66,7 +66,7 @@ public class MonitorInfo {
 	
 	public MonitorInfo(ConnectionInfo connectionInfo){
 		generateToken();
-		this.connectionInfo = connectionInfo;
+		this.setConnectionInfo(connectionInfo);
 	}
 
 	@Override
@@ -162,6 +162,14 @@ public class MonitorInfo {
 
 	public void setConnectionToken(String connectionToken) {
 		this.connectionToken = connectionToken;
+	}
+
+	public ConnectionInfo getConnectionInfo() {
+		return connectionInfo;
+	}
+
+	public void setConnectionInfo(ConnectionInfo connectionInfo) {
+		this.connectionInfo = connectionInfo;
 	}
 
 }

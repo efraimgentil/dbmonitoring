@@ -36,14 +36,19 @@ public class ConnectionPool {
 	
 	/**
 	 * Returns the connection mapped in the informed token
-	 * @param token
+	 * @param connectionToken
 	 * @return
 	 * @throws ConnectionNotFound 
 	 */
-	public Connection getConnection(String token) throws ConnectionNotFound {
-		if(!connections.containsKey(token))
-			throw new ConnectionNotFound("Has not possible to find the connection to the iformed token: " + token);
-		return connections.get( token );
+	public Connection getConnection(String connectionToken) throws ConnectionNotFound {
+		if(!connections.containsKey(connectionToken))
+			throw new ConnectionNotFound("Has not possible to find the connection to the iformed token: " + connectionToken);
+		return connections.get( connectionToken );
+	}
+	
+	public Connection getConnection(ConnectionInfo connectionInfo) throws ConnectionNotFound {
+		String connectionToken = connectionInfo.getConnectionToken();
+		return getConnection(connectionToken);
 	}
 	
 	/**
