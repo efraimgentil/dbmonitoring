@@ -1,4 +1,4 @@
-package com.efraimgentil.dbmonitoring.models;
+package com.efraimgentil.dbmonitoring.models.builder;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -10,67 +10,49 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import org.mockito.exceptions.Reporter;
 
-/**
- * 
- * @author Efraim Gentil
- * @date Nov 28, 2013
- */
-public class MonitorResponse {
+import com.efraimgentil.dbmonitoring.models.MonitorResponse;
+
+public class ResponseBuilder {
 	
-	@JsonProperty("success")
-	private Boolean success = false;
+	private MonitorResponse response;
 	
-	@JsonProperty("message")
-	private String message;
-	
-	@JsonProperty("data")
-	private Map<String, Object> data;
-	
-	public MonitorResponse() {	}
-	
-	public MonitorResponse(Boolean success, String message) {
-		super();
-		this.success = success;
-		this.message = message;
+	public ResponseBuilder() {
+		response = new MonitorResponse();
 	}
 	
-	public MonitorResponse(Boolean success, String message, Map<String, Object> data) {
-		super();
-		this.success = success;
-		this.message = message;
-		this.data = data;
+	public ResponseBuilder error(){
+		response.setSuccess(false);
+		return this;
 	}
-
-	public Boolean getSuccess() {
-		return success;
+	
+	public ResponseBuilder success(){
+		response.setSuccess( true );
+		return this;
 	}
-
-	public void setSuccess(Boolean success) {
-		this.success = success;
+	
+	public ResponseBuilder withMessage(String message){
+		response.setMessage(message);
+		return this;
 	}
-
-	public String getMessage() {
-		return message;
+	
+	public ResponseBuilder withData(Map<String, Object> data){
+		response.setData(data);
+		return this;
 	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
-
-	public Map<String, Object> getData() {
+	
+	public ResponseBuilder putData(String key , Object value){
+		Map<String, Object> data = response.getData();
 		if(data == null){
-			data = new HashMap<>();
+			data = new HashMap<String, Object>();
+			response.setData(data);
 		}
-		return data;
-	}
-
-	public void setData(Map<String, Object> data) {
-		this.data = data;
+		data.put(key, value);
+		return this;
 	}
 	
-	public void createRows(ResultSet resultSet) throws SQLException{
+	public ResponseBuilder readResultSetToDataRows(ResultSet resultSet) throws SQLException{
 		List< Map<String, Object> > rows = new ArrayList<>(); 
 		ResultSetMetaData rsmd = resultSet.getMetaData();
 		int columnCount = rsmd.getColumnCount();
@@ -110,7 +92,12 @@ public class MonitorResponse {
 			}
 			rows.add(row);
 		}
-		getData().put("rows", rows);
+		putData("rows", rows);
+		return this;
+	}
+	
+	public MonitorResponse build(){
+		return response;
 	}
 	
 }

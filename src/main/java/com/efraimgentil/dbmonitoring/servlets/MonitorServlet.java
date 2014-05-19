@@ -31,7 +31,9 @@ import com.efraimgentil.dbmonitoring.connections.ConnectionPool;
 import com.efraimgentil.dbmonitoring.constants.AvailableDatabase;
 import com.efraimgentil.dbmonitoring.models.MonitorInfo;
 import com.efraimgentil.dbmonitoring.models.MonitorResponse;
+import com.efraimgentil.dbmonitoring.services.MonitorInfoPoolService;
 import com.efraimgentil.dbmonitoring.services.MonitorService;
+import com.efraimgentil.dbmonitoring.servlets.actions.CreateConnection;
 
 @WebServlet({ "/monitor" })
 public class MonitorServlet extends HttpServlet {
@@ -52,10 +54,9 @@ public class MonitorServlet extends HttpServlet {
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 
-		MonitorService monitorService = new MonitorService();
+		MonitorService monitorService = new MonitorService( MonitorInfoPoolService.getInstance() , ConnectionPool.getInstance() );
 
-		String action = request.getParameter("action") != null ? request
-				.getParameter("action").toUpperCase() : "";
+		String actionIdentifier = request.getParameter("action") != null ? request.getParameter("action").toUpperCase() : "";
 
 		OutputStream outputStream = response.getOutputStream();
 
@@ -63,11 +64,14 @@ public class MonitorServlet extends HttpServlet {
 
 		MonitorInfo monitorInfo;
 		MonitorResponse monitorResponse;
-		switch (action) {
+		
+//		Action action;
+		switch (actionIdentifier) {
 			case OPEN_CONNECTION:
 				monitorInfo = getObjectReader(mapper).readValue( request.getParameter("form") );
 				monitorResponse = monitorService.openConnection(monitorInfo);
 				mapper.writeValue(outputStream, monitorResponse);
+//				action = new CreateConnection();
 				break;
 			case INITIATE:
 				monitorInfo = getObjectReader(mapper).readValue( request.getParameter("form") );

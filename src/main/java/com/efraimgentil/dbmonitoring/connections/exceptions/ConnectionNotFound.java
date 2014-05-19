@@ -12,4 +12,10 @@ public class ConnectionNotFound extends Exception {
 	public ConnectionNotFound(String message) {
 		super(message);
 	}
+	
+	
+	@Override
+	public String getMessage() {
+		return "The connection for this token was not found. Error: " +  super.getMessage();
+	}
 }

@@ -15,4 +15,9 @@ public class NoMonitorTokenException extends Exception {
 	
 	public NoMonitorTokenException(String message) { super(message); }
 	
+	@Override
+	public String getMessage() {
+		return "The token for monitor was not found Error:" + super.getMessage();
+	}
+	
 }

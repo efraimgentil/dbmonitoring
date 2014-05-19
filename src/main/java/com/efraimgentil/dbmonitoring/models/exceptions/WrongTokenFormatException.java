@@ -15,4 +15,8 @@ public class WrongTokenFormatException extends Exception {
 	
 	public WrongTokenFormatException(String message) { super(message);	}
 	
+	@Override
+	public String getMessage() {
+		return  "The token has the wrong format. Error: " + super.getMessage();
+	}
 }

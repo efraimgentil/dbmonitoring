@@ -31,24 +31,16 @@ public class MonitorServiceTest {
 	
 	private MonitorService monitorService;
 	
-	@Mock
-	private MonitorInfo monitorInfo;
-	
-	@Mock
-	private ConnectionPool connectionPool;
-	
-	@Mock
-	private MonitorInfoPoolService monitorInfoPoolService;
+	@Mock MonitorInfo monitorInfo;
+	@Mock ConnectionPool connectionPool;
+	@Mock MonitorInfoPoolService monitorInfoPoolService;
 	
 	@BeforeMethod
 	public void initMethods() throws NoMonitorTokenException, WrongTokenFormatException{
 		MockitoAnnotations.initMocks(this);
-		monitorService = new MonitorService();
-		monitorService.setConnectionPool(connectionPool);
-		monitorService.setMonitorInfoPoolService(monitorInfoPoolService);
-		
-		when( monitorInfo.getConnectionToken() ).thenReturn("ASDFFASDASD");
-		when( monitorInfo.getMonitorToken() ).thenReturn("ASDFFASDASD");
+		monitorService = new MonitorService( monitorInfoPoolService , connectionPool );
+		when( monitorInfo.getConnectionToken() ).thenReturn("HASH_OF_CONNECTION_TOKEN");
+		when( monitorInfo.getMonitorToken() ).thenReturn("HASH_OF_MONITOR_TOKEN");
 	}
 	
 	
@@ -129,12 +121,13 @@ public class MonitorServiceTest {
 	
 	@Test(description = "Should return even if everything goes wrong, and pass a instruction message" , groups = { "failure" , "initiateMonitor" })
 	public void shouldReturnEvenIfEverythingGoesWrong() throws ConnectionNotFound{
-		when ( connectionPool.getConnection( anyString() ) ).thenThrow(  new NullPointerException() );
+		String errorMessage = "This is a null pointer";
+		when ( connectionPool.getConnection( anyString() ) ).thenThrow(  new NullPointerException( errorMessage ) );
 		
 		MonitorResponse monitorResponse = monitorService.initiateMonitor(monitorInfo);
 		
-		assertFalse( monitorResponse.getSuccess() );
-		assertNotNull( monitorResponse.getMessage() );
+		assertFalse("Should be a failure response" , monitorResponse.getSuccess() );
+		assertEquals( errorMessage ,  monitorResponse.getMessage() );
 	}
 	
 	

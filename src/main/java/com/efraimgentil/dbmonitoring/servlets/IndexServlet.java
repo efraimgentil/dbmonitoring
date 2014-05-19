@@ -22,11 +22,5 @@ public class IndexServlet extends HttpServlet {
 		req.setAttribute("availableDatabases", Arrays.asList( AvailableDatabase.values() ) );
 		req.getRequestDispatcher("/WEB-INF/pages/new.jsp").forward( req , resp );
 	}
-	
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		super.doPost(req, resp);
-	}
-	
+
 }
