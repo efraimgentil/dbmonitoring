@@ -28,8 +28,6 @@ public class MonitorService {
 	private MonitorInfoPoolService monitorInfoPoolService;
 	private ConnectionPool connectionPool;
 	
-//	public MonitorService() {	}
-	
 	public MonitorService(MonitorInfoPoolService monitorInfoPoolService,
 			ConnectionPool connectionPool) {
 		super();
@@ -110,22 +108,11 @@ public class MonitorService {
 	}
 	
 	public ConnectionPool getConnectionPool() {
-//		if(connectionPool == null){
-//			connectionPool = ConnectionPool.getInstance();
-//		}
 		return connectionPool;
 	}
 
-//	public void setConnectionPool(ConnectionPool connectionPool) {
-//		this.connectionPool = connectionPool;
-//	}
-
 	public MonitorInfoPoolService getMonitorInfoPoolService() {
-		return monitorInfoPoolService;// == null ? monitorInfoPoolService = MonitorInfoPoolService.getInstance() : monitorInfoPoolService ;
+		return monitorInfoPoolService;
 	}
-
-//	public void setMonitorInfoPoolService(MonitorInfoPoolService monitorInfoPoolService) {
-//		this.monitorInfoPoolService = monitorInfoPoolService;
-//	}
 	
 }

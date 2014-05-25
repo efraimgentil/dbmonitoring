@@ -1,4 +1,4 @@
-package com.efraim.dbmonitoring.services;
+package com.efraimgentil.dbmonitoring.services;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;

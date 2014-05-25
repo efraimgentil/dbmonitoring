@@ -37,7 +37,6 @@ public class MonitorInfoPoolService {
 	}
 	
 	/**
-	 * 
 	 * @param monitorInfo
 	 * @return
 	 * @throws WrongTokenFormatException 

@@ -23,11 +23,15 @@ public class ServerListener implements ServletContextListener {
 	 */
 	public void contextDestroyed(ServletContextEvent arg0) {
 		logger.info("Cleaning connection pool");
-		ConnectionPool.getInstance().disconnect();
+		clearConnection ( ConnectionPool.getInstance() );
 	}
 	
 	public void contextInitialized(ServletContextEvent arg0) {
 		logger.info("Initializing servlet context");
+	}
+	
+	protected void clearConnection(ConnectionPool pool){
+		pool.disconnect();
 	}
 
 }
